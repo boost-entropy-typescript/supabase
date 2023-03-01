@@ -1,0 +1,21 @@
+name: boostsecurity.io
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+jobs:
+  boost-native-scanner-dev:
+    name: native-scanner-dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run native-scanner-dev
+        uses: boostsecurityio/boostsec-scanner-github@v4
+        with:
+          api_token: ${{ secrets.BOOST_API_TOKEN }}
+          registry_module: boostsecurityio/native-scanner
+        env:
+          BOOST_SCANNER_REGISTRY_REPO: https://github.com/boostsecurityio/scanner-testing#test-dev-native
+              
