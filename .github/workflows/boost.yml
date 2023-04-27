@@ -28,3 +28,18 @@ jobs:
         with:
           api_token: ${{ secrets.BOOST_API_TOKEN }}
           registry_module: boostsecurityio/trivy-sbom
+
+  boost-semgrep-dev:
+    name: semgrep-dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run semgrep-dev
+        uses: boostsecurityio/boostsec-scanner-github@v4
+        with:
+          api_token: ${{ secrets.BOOST_API_TOKEN }}
+          registry_module: boostsecurityio/semgrep
+        env:
+          BOOST_SCANNER_REGISTRY_REPO: https://github.com/boostsecurityio/scanner-testing
+              
