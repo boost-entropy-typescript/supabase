@@ -8,7 +8,7 @@ import { useOrganizationDetailQuery } from 'data/organizations/organization-deta
 import { useOrganizationRolesQuery } from 'data/organizations/organization-roles-query'
 import { usePermissionsQuery } from 'data/permissions/permissions-query'
 import { useSelectedOrganization, useStore } from 'hooks'
-import { delete_ } from 'lib/common/fetch'
+import { delete_, isResponseOk } from 'lib/common/fetch'
 import { API_URL } from 'lib/constants'
 import { useProfile } from 'lib/profile'
 import InviteMemberButton from './InviteMemberButton'
@@ -54,12 +54,12 @@ const TeamSettings = () => {
     try {
       confirmAlert({
         title: 'Are you sure?',
-        message: 'Are you sure you want to leave this team? This is permanent.',
+        message: 'Are you sure you want to leave this organization? This is permanent.',
         onAsyncConfirm: async () => {
-          const response = await delete_(
+          const response = await delete_<void>(
             `${API_URL}/organizations/${slug}/members/${profile!.gotrue_id}`
           )
-          if (response.error) {
+          if (!isResponseOk(response)) {
             throw response.error
           } else {
             window?.location.replace('/') // Force reload to clear Store
@@ -69,7 +69,7 @@ const TeamSettings = () => {
     } catch (error: any) {
       ui.setNotification({
         category: 'error',
-        message: `Error leaving: ${error?.message}`,
+        message: `Failed to leave organization: ${error?.message}`,
       })
     } finally {
       setIsLeaving(false)

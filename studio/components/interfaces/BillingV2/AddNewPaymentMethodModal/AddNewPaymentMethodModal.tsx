@@ -78,8 +78,8 @@ const AddNewPaymentMethodModal = ({
     if (intent.error) {
       return ui.setNotification({
         category: 'error',
-        message: intent.error.message,
         error: intent.error,
+        message: `Failed to setup intent: ${intent.error.message}`,
       })
     } else {
       setIntent(intent)
@@ -111,10 +111,18 @@ const AddNewPaymentMethodModal = ({
         ref={captchaRefCallback}
         sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY!}
         size="invisible"
+        onOpen={() => {
+          // [Joshen] This is to ensure that hCaptcha popup remains clickable
+          if (document !== undefined) document.body.classList.add('!pointer-events-auto')
+        }}
+        onClose={() => {
+          onLocalCancel()
+          if (document !== undefined) document.body.classList.remove('!pointer-events-auto')
+        }}
         onVerify={(token) => {
           setCaptchaToken(token)
+          if (document !== undefined) document.body.classList.remove('!pointer-events-auto')
         }}
-        onClose={onLocalCancel}
         onExpire={() => {
           setCaptchaToken(null)
         }}
