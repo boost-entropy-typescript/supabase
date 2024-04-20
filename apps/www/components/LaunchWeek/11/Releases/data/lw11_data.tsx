@@ -269,7 +269,7 @@ const days: (isDark?: boolean) => WeekDayProps[] = (isDark = true) => [
     d: 5,
     dd: 'Fri',
     shipped: true,
-    isToday: true,
+    isToday: false,
     hasCountdown: false,
     blog: '/blog/security-performance-advisor',
     date: '19 April',
@@ -285,10 +285,10 @@ const days: (isDark?: boolean) => WeekDayProps[] = (isDark = true) => [
         type: 'blog',
         href: '/blog/security-performance-advisor',
       },
-      // {
-      //   type: 'video',
-      //   href: '',
-      // },
+      {
+        type: 'video',
+        href: 'NZEbVe47DfA',
+      },
       {
         type: 'xSpace',
         href: 'https://supabase.link/twitter-space-ga-week-5',
