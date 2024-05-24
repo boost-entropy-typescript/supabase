@@ -73,8 +73,23 @@ export const docsConfig: DocsConfig = {
       title: 'Fragment Components',
       items: [
         {
+          title: 'Introduction',
+          href: '/docs/components/fragment-components',
+          items: [],
+        },
+        {
+          title: 'Admonition',
+          href: '/docs/fragments/admonition',
+          items: [],
+        },
+        {
           title: 'Text Confirm Dialog',
           href: '/docs/fragments/text-confirm-dialog',
+          items: [],
+        },
+        {
+          title: 'Info Tooltip',
+          href: '/docs/fragments/info-tooltip',
           items: [],
         },
         {
@@ -82,11 +97,21 @@ export const docsConfig: DocsConfig = {
           href: '/docs/fragments/form-item-layout',
           items: [],
         },
+        {
+          title: 'Multi Select',
+          href: '/docs/fragments/multi-select',
+          items: [],
+        },
       ],
     },
     {
       title: 'Atom Components',
       items: [
+        {
+          title: 'Introduction',
+          href: '/docs/components/atom-components',
+          items: [],
+        },
         {
           title: 'Accordion',
           href: '/docs/components/accordion',
@@ -247,6 +272,16 @@ export const docsConfig: DocsConfig = {
         {
           title: 'Radio Group',
           href: '/docs/components/radio-group',
+          items: [],
+        },
+        {
+          title: 'Radio Group Stacked',
+          href: '/docs/components/radio-group-stacked',
+          items: [],
+        },
+        {
+          title: 'Radio Group Card',
+          href: '/docs/components/radio-group-card',
           items: [],
         },
         {
