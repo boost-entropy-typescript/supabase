@@ -5,6 +5,18 @@ on:
     branches:
       - master
 jobs:
+  boost-gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run gitleaks
+        uses: boostsecurityio/boostsec-scanner-github@v4
+        with:
+          api_token: ${{ secrets.BOOST_API_TOKEN }}
+          registry_module: boostsecurityio/gitleaks
+
   boost-native:
     name: Native Scanner
     runs-on: ubuntu-latest
@@ -17,6 +29,18 @@ jobs:
           api_token: ${{ secrets.BOOST_API_TOKEN }}
           registry_module: boostsecurityio/scanner
 
+  boost-osv-scanner:
+    name: osv-scanner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run osv-scanner
+        uses: boostsecurityio/boostsec-scanner-github@v4
+        with:
+          api_token: ${{ secrets.BOOST_API_TOKEN }}
+          registry_module: boostsecurityio/osv-scanner
+
   boost-sbom:
     name: SBOM
     runs-on: ubuntu-latest
@@ -28,6 +52,18 @@ jobs:
         with:
           api_token: ${{ secrets.BOOST_API_TOKEN }}
           registry_module: boostsecurityio/trivy-sbom
+
+  boost-sca:
+    name: Trivy FS SCA
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run Trivy FS SCA
+        uses: boostsecurityio/boostsec-scanner-github@v4
+        with:
+          api_token: ${{ secrets.BOOST_API_TOKEN }}
+          registry_module: boostsecurityio/trivy-fs
 
   boost-semgrep:
     name: semgrep
