@@ -8,10 +8,14 @@ import * as z from 'zod'
 import { useParams } from 'common'
 import { useOrganizationCreateInvitationMutation } from 'data/organization-members/organization-invitation-create-mutation'
 import { useOrganizationRolesV2Query } from 'data/organization-members/organization-roles-query'
+import { useOrganizationMemberInviteCreateMutation } from 'data/organizations/organization-member-invite-create-mutation'
 import { useOrganizationMembersQuery } from 'data/organizations/organization-members-query'
 import { useProjectsQuery } from 'data/projects/projects-query'
-import { doPermissionsCheck, useFlag, useGetPermissions, useSelectedOrganization } from 'hooks'
+import { doPermissionsCheck, useGetPermissions } from 'hooks/misc/useCheckPermissions'
+import { useSelectedOrganization } from 'hooks/misc/useSelectedOrganization'
+import { useFlag } from 'hooks/ui/useFlag'
 import { useProfile } from 'lib/profile'
+import { isNil } from 'lodash'
 import {
   Button,
   Dialog,
@@ -81,6 +85,8 @@ export const InviteMemberButton = () => {
     )
 
   const { mutate: inviteMember, isLoading: isInviting } = useOrganizationCreateInvitationMutation()
+  const { mutate: inviteMemberOld, isLoading: isInvitingOld } =
+    useOrganizationMemberInviteCreateMutation()
 
   const FormSchema = z.object({
     email: z.string().email('Must be a valid email address').min(1, 'Email is required'),
@@ -102,6 +108,7 @@ export const InviteMemberButton = () => {
     if (!slug) return console.error('Slug is required')
     if (profile?.id === undefined) return console.error('Profile ID required')
 
+    const developerRole = orgScopedRoles.find((role) => role.name === 'Developer')
     const existingMember = (members ?? []).find(
       (member) => member.primary_email === values.email.toLowerCase()
     )
@@ -113,28 +120,54 @@ export const InviteMemberButton = () => {
       }
     }
 
-    inviteMember(
-      {
-        slug,
-        email: values.email.toLowerCase(),
-        roleId: Number(values.role),
-        ...(!values.applyToOrg && values.projectRef ? { projects: [values.projectRef] } : {}),
-      },
-      {
-        onSuccess: () => {
-          toast.success('Successfully sent invitation to new member')
-          setIsOpen(!isOpen)
-
-          const developerRole = orgScopedRoles.find((role) => role.name === 'Developer')
-          form.reset({
-            email: '',
-            role: developerRole?.id.toString() ?? '',
-            applyToOrg: true,
-            projectRef: '',
-          })
+    if (projectLevelPermissionsEnabled) {
+      inviteMember(
+        {
+          slug,
+          email: values.email.toLowerCase(),
+          roleId: Number(values.role),
+          ...(!values.applyToOrg && values.projectRef ? { projects: [values.projectRef] } : {}),
         },
-      }
-    )
+        {
+          onSuccess: () => {
+            toast.success('Successfully sent invitation to new member')
+            setIsOpen(!isOpen)
+
+            form.reset({
+              email: '',
+              role: developerRole?.id.toString() ?? '',
+              applyToOrg: true,
+              projectRef: '',
+            })
+          },
+        }
+      )
+    } else {
+      inviteMemberOld(
+        {
+          slug,
+          invitedEmail: values.email.toLowerCase(),
+          ownerId: profile.id,
+          roleId: Number(values.role),
+        },
+        {
+          onSuccess: (data) => {
+            if (isNil(data)) {
+              toast.error('Failed to add member')
+            } else {
+              toast.success('Successfully added new member')
+              setIsOpen(!isOpen)
+              form.reset({
+                email: '',
+                role: developerRole?.id.toString() ?? '',
+                applyToOrg: true,
+                projectRef: '',
+              })
+            }
+          },
+        }
+      )
+    }
   }
 
   useEffect(() => {
@@ -296,7 +329,7 @@ export const InviteMemberButton = () => {
                         autoFocus
                         {...field}
                         autoComplete="off"
-                        disabled={isInviting}
+                        disabled={isInviting || isInvitingOld}
                         placeholder="Enter email address"
                       />
                     </FormControl_Shadcn_>
@@ -307,7 +340,7 @@ export const InviteMemberButton = () => {
             </DialogSection>
             <DialogSectionSeparator />
             <DialogSection className="pt-0">
-              <Button block htmlType="submit" loading={isInviting} disabled={isInviting}>
+              <Button block htmlType="submit" loading={isInviting || isInvitingOld}>
                 Send invitation
               </Button>
             </DialogSection>
