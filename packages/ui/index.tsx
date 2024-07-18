@@ -19,6 +19,7 @@ export * from './src/components/Alert'
 export * from './src/components/Accordion'
 export * from './src/components/Collapsible'
 export * from './src/components/CodeBlock'
+export * from './src/components/TreeView/TreeView'
 
 // NAV
 
@@ -190,6 +191,16 @@ export { Slider as Slider_Shadcn_ } from './src/components/shadcn/ui/slider'
 export { Input as Input_Shadcn_ } from './src/components/shadcn/ui/input'
 
 export { Button as Button_Shadcn_ } from './src/components/shadcn/ui/button'
+
+export {
+  Breadcrumb as Breadcrumb_Shadcn_,
+  BreadcrumbItem as BreadcrumbItem_Shadcn_,
+  BreadcrumbLink as BreadcrumbLink_Shadcn_,
+  BreadcrumbList as BreadcrumbList_Shadcn_,
+  BreadcrumbEllipsis as BreadcrumbEllipsis_Shadcn_,
+  BreadcrumbPage as BreadcrumbPage_Shadcn_,
+  BreadcrumbSeparator as BreadcrumbSeparator_Shadcn_,
+} from './src/components/shadcn/ui/breadcrumb'
 
 export { TextArea as TextArea_Shadcn_ } from './src/components/shadcn/ui/text-area'
 
