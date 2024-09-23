@@ -1,30 +1,24 @@
-import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { ExternalLink, Trash } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { object, string } from 'yup'
 
-import { Label } from '@ui/components/shadcn/ui/label'
 import { useParams } from 'common'
-import { ButtonTooltip } from 'components/ui/ButtonTooltip'
 import { FormHeader } from 'components/ui/Forms/FormHeader'
 import { HorizontalShimmerWithIcon } from 'components/ui/Shimmers/Shimmers'
 import { useAuthConfigQuery } from 'data/auth/auth-config-query'
 import { useAuthConfigUpdateMutation } from 'data/auth/auth-config-update-mutation'
-import { useCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import {
   AlertDescription_Shadcn_,
   AlertTitle_Shadcn_,
   Alert_Shadcn_,
   Button,
-  DialogSectionSeparator,
-  Form,
   Modal,
+  ScrollArea,
   WarningIcon,
+  cn,
 } from 'ui'
-import { Input } from 'ui-patterns/DataInputs/Input'
-import { urlRegex } from '../Auth.constants'
+import { AddNewURLModal } from './AddNewURLModal'
 import { RedirectUrlList } from './RedirectUrlList'
 import { ValueContainer } from './ValueContainer'
 
@@ -50,41 +44,6 @@ export const RedirectUrls = () => {
   const [open, setOpen] = useState(false)
   const [openRemoveSelected, setOpenRemoveSelected] = useState(false)
   const [selectedUrls, setSelectedUrls] = useState<string[]>([])
-
-  const canUpdateConfig = useCheckPermissions(PermissionAction.UPDATE, 'custom_config_gotrue')
-
-  const newUrlSchema = object({
-    url: string().matches(urlRegex, 'URL is not valid').required(),
-  })
-
-  const onAddNewUrl = async (values: any) => {
-    if (!values.url) {
-      return
-    }
-
-    const payload = URI_ALLOW_LIST_ARRAY
-    // remove any trailing commas
-    payload.push(values.url.replace(/,\s*$/, ''))
-
-    const payloadString = payload.toString()
-
-    if (payloadString.length > MAX_URLS_LENGTH) {
-      return toast.error('Too many redirect URLs, please remove some or try to use wildcards')
-    }
-
-    updateAuthConfig(
-      { projectRef: projectRef!, config: { URI_ALLOW_LIST: payloadString } },
-      {
-        onError: (error) => {
-          toast.error(`Failed to update URL: ${error?.message}`)
-        },
-        onSuccess: () => {
-          setOpen(false)
-          toast.success('Successfully added URL')
-        },
-      }
-    )
-  }
 
   const onConfirmDeleteUrl = async (urls?: string[]) => {
     if (!urls || urls.length === 0) return
@@ -118,51 +77,15 @@ export const RedirectUrls = () => {
           description={`URLs that auth providers are permitted to redirect to post authentication. Wildcards are allowed, for example, https://*.domain.com`}
         />
         <div className="flex items-center gap-2 mb-6 ml-12">
-          {selectedUrls.length > 0 ? (
-            <>
-              <Button type="default" onClick={() => setSelectedUrls([])}>
-                Clear selection
-              </Button>
-              <ButtonTooltip
-                type="default"
-                disabled={!canUpdateConfig}
-                tooltip={{
-                  content: {
-                    side: 'bottom',
-                    text: 'You need additional permissions to remove redirect URLs',
-                  },
-                }}
-                icon={<Trash />}
-                onClick={() => (selectedUrls.length > 0 ? setOpenRemoveSelected(true) : null)}
-              >
-                Remove ({selectedUrls.length})
-              </ButtonTooltip>
-            </>
-          ) : (
-            <>
-              <Button asChild type="default" icon={<ExternalLink />}>
-                <Link
-                  href="https://supabase.com/docs/guides/auth/concepts/redirect-urls"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Documentation
-                </Link>
-              </Button>
-              <ButtonTooltip
-                disabled={!canUpdateConfig}
-                onClick={() => setOpen(true)}
-                tooltip={{
-                  content: {
-                    side: 'bottom',
-                    text: 'You need additional permissions to update redirect URLs',
-                  },
-                }}
-              >
-                Add URL
-              </ButtonTooltip>
-            </>
-          )}
+          <Button asChild type="default" icon={<ExternalLink />}>
+            <Link
+              href="https://supabase.com/docs/guides/auth/concepts/redirect-urls"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Documentation
+            </Link>
+          </Button>
         </div>
       </div>
       {isLoading && (
@@ -187,49 +110,18 @@ export const RedirectUrls = () => {
           allowList={URI_ALLOW_LIST_ARRAY}
           selectedUrls={selectedUrls}
           onSelectUrl={setSelectedUrls}
-          canUpdate={canUpdateConfig}
+          onSelectAddURL={() => setOpen(true)}
+          onSelectClearSelection={() => setSelectedUrls([])}
+          onSelectRemoveURLs={() => setOpenRemoveSelected(true)}
         />
       )}
-      <Modal
-        hideFooter
-        size="small"
+
+      <AddNewURLModal
         visible={open}
-        onCancel={() => setOpen(!open)}
-        header="Add a new URL"
-        description="This will add a URL to a list of allowed URLs that can interact with your Authentication services for this project."
-      >
-        <Form
-          validateOnBlur
-          id="new-redirect-url-form"
-          initialValues={{ url: '' }}
-          validationSchema={newUrlSchema}
-          onSubmit={onAddNewUrl}
-        >
-          {() => {
-            return (
-              <>
-                <Modal.Content className="flex flex-col gap-y-2">
-                  <Label htmlFor="url">URL</Label>
-                  <Input id="url" name="url" placeholder="https://mydomain.com" />
-                </Modal.Content>
-                <DialogSectionSeparator />
-                <Modal.Content>
-                  <Button
-                    block
-                    form="new-redirect-url-form"
-                    htmlType="submit"
-                    size="small"
-                    disabled={isUpdatingConfig}
-                    loading={isUpdatingConfig}
-                  >
-                    Add URL
-                  </Button>
-                </Modal.Content>
-              </>
-            )
-          }}
-        </Form>
-      </Modal>
+        allowList={URI_ALLOW_LIST_ARRAY}
+        onClose={() => setOpen(false)}
+      />
+
       <Modal
         hideFooter
         size="large"
@@ -240,17 +132,22 @@ export const RedirectUrls = () => {
           setOpenRemoveSelected(false)
         }}
       >
-        <Modal.Content>
+        <Modal.Content className="flex flex-col gap-y-2">
           <p className="mb-2 text-sm text-foreground-light">
-            Are you sure you want to remove the following URLs?
+            Are you sure you want to remove the following {selectedUrls.length} URL
+            {selectedUrls.length > 1 ? 's' : ''}?
           </p>
-          <ul className="list-disc pl-4 mb-2">
-            {selectedUrls.map((url, index) => (
-              <li key={index} className="text-foreground-light text-sm">
-                {url}
-              </li>
-            ))}
-          </ul>
+          <ScrollArea className={cn(selectedUrls.length > 4 ? 'h-[250px]' : '')}>
+            <div className="flex flex-col -space-y-1">
+              {selectedUrls.map((url) => {
+                return (
+                  <ValueContainer key={url} className="px-4 py-3 hover:bg-surface-100">
+                    {url}
+                  </ValueContainer>
+                )
+              })}
+            </div>
+          </ScrollArea>
           <p className="text-foreground-light text-sm">
             These URLs will no longer work with your authentication configuration.
           </p>
