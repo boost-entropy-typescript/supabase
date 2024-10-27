@@ -964,10 +964,6 @@ export const database: NavMenuConstant = {
           url: '/guides/database/extensions/pg_net',
         },
         {
-          name: 'pg_partman: Partition Maintenance',
-          url: '/guides/database/extensions/pg_partman',
-        },
-        {
           name: 'pg_plan_filter: Restrict Total Cost',
           url: '/guides/database/extensions/pg_plan_filter',
         },
@@ -986,10 +982,6 @@ export const database: NavMenuConstant = {
         {
           name: 'PostGIS: Geo queries',
           url: '/guides/database/extensions/postgis',
-        },
-        {
-          name: 'pgmq: Queues',
-          url: '/guides/database/extensions/pgmq',
         },
         {
           name: 'pgsodium (pending deprecation): Encryption Features',
@@ -1859,6 +1851,12 @@ export const MIGRATION_PAGES: Partial<NavMenuSection & ComponentProps<typeof Ico
     name: 'Vercel Postgres',
     icon: '/docs/img/icons/vercel-icon',
     url: '/guides/platform/migrating-to-supabase/vercel-postgres',
+    hasLightIcon: true,
+  },
+  {
+    name: 'Neon',
+    icon: '/docs/img/icons/neon-icon',
+    url: '/guides/platform/migrating-to-supabase/neon',
     hasLightIcon: true,
   },
   {

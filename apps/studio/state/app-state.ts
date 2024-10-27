@@ -1,3 +1,4 @@
+import { SupportedAssistantEntities } from 'components/ui/AIAssistantPanel/AIAssistant.types'
 import { LOCAL_STORAGE_KEYS } from 'lib/constants'
 import { proxy, snapshot, useSnapshot } from 'valtio'
 
@@ -7,6 +8,12 @@ const EMPTY_DASHBOARD_HISTORY: {
 } = {
   sql: undefined,
   editor: undefined,
+}
+
+type AiAssistantPanelType = {
+  open: boolean
+  editor?: SupportedAssistantEntities | null
+  content?: string
 }
 
 export const appState = proxy({
@@ -36,16 +43,11 @@ export const appState = proxy({
   },
 
   isOptedInTelemetry: false,
-  setIsOptedInTelemetry: (value: boolean | null, flag = LOCAL_STORAGE_KEYS.TELEMETRY_CONSENT) => {
+  setIsOptedInTelemetry: (value: boolean | null) => {
     appState.isOptedInTelemetry = value === null ? false : value
     if (typeof window !== 'undefined' && value !== null) {
-      localStorage.setItem(flag, value.toString())
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TELEMETRY_CONSENT, value.toString())
     }
-    // [Joshen] Eventually once we completely move to PH, we should just set local storage
-    // directly here, but since currently it's dependent on a feature flag, will need to pass in as a prop
-    // if (typeof window !== 'undefined') {
-    //   localStorage.setItem(LOCAL_STORAGE_KEYS.TELEMETRY_CONSENT, value.toString())
-    // }
   },
   showEnableBranchingModal: false,
   setShowEnableBranchingModal: (value: boolean) => {
@@ -91,6 +93,11 @@ export const appState = proxy({
   },
   setNavigationPanelJustClosed: (value: boolean) => {
     appState.navigationPanelJustClosed = value
+  },
+
+  aiAssistantPanel: { open: false, editor: null, content: '' } as AiAssistantPanelType,
+  setAiAssistantPanel: (value: AiAssistantPanelType) => {
+    appState.aiAssistantPanel = { ...appState.aiAssistantPanel, ...value }
   },
 })
 
