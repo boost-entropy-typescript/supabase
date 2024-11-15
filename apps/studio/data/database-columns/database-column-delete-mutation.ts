@@ -1,12 +1,13 @@
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { databaseKeys } from 'data/database/keys'
 import { entityTypeKeys } from 'data/entity-types/keys'
 import { del, handleError } from 'data/fetchers'
 import { sqlKeys } from 'data/sql/keys'
-import { tableKeys } from 'data/tables/keys'
+import { tableEditorKeys } from 'data/table-editor/keys'
+import { tableRowKeys } from 'data/table-rows/keys'
 import { viewKeys } from 'data/views/keys'
-import type { TableLike } from 'hooks/misc/useTable'
 import type { ResponseError } from 'types'
 
 export type DatabaseColumnDeleteVariables = {
@@ -14,7 +15,7 @@ export type DatabaseColumnDeleteVariables = {
   connectionString?: string
   id: string
   cascade?: boolean
-  table?: TableLike
+  table?: { id: number; schema: string; name: string }
 }
 
 export async function deleteDatabaseColumn({
@@ -62,22 +63,21 @@ export const useDatabaseColumnDeleteMutation = ({
           queryClient.invalidateQueries(entityTypeKeys.list(projectRef)),
           ...(table !== undefined
             ? [
-                queryClient.invalidateQueries(tableKeys.table(projectRef, table.id)),
-                queryClient.invalidateQueries(
-                  sqlKeys.query(projectRef, [table.schema, table.name])
-                ),
-                queryClient.invalidateQueries(
-                  sqlKeys.query(projectRef, ['table-definition', table.schema, table.name])
-                ),
+                queryClient.invalidateQueries(tableEditorKeys.tableEditor(projectRef, table.id)),
+                queryClient.invalidateQueries(databaseKeys.tableDefinition(projectRef, table.id)),
                 // invalidate all views from this schema, not sure if this is needed since you can't actually delete a column
                 // which has a view dependent on it
                 queryClient.invalidateQueries(viewKeys.listBySchema(projectRef, table.schema)),
-                // invalidate the view if there's a view with this id, not sure if this is needed because you can't delete a
-                // column from a view
-                queryClient.invalidateQueries(viewKeys.view(projectRef, table.id)),
               ]
             : []),
         ])
+
+        if (table !== undefined) {
+          // We need to invalidate tableRowsAndCount after tableEditor
+          // to ensure the query sent is correct
+          await queryClient.invalidateQueries(tableRowKeys.tableRowsAndCount(projectRef, table.id))
+        }
+
         await onSuccess?.(data, variables, context)
       },
       async onError(data, variables, context) {

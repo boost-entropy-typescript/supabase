@@ -145,6 +145,10 @@ export interface paths {
     /** Delete all factors associated to a user */
     delete: operations['FactorsController_deleteFactors']
   }
+  '/platform/auth/{ref}/validate/spam': {
+    /** Validate spam based on the given email content */
+    post: operations['ValidateController_validateSpam']
+  }
   '/platform/cli/login': {
     /** Create CLI login session */
     post: operations['CliLoginController_createCliLoginSession']
@@ -955,6 +959,10 @@ export interface paths {
     /** Run project lints */
     get: operations['ProjectRunLintsController_runProjectLints']
   }
+  '/platform/projects/{ref}/service-versions': {
+    /** Gets service versions for a specific project */
+    get: operations['ProjectServiceVersionsController_getServiceVersions']
+  }
   '/platform/projects/{ref}/settings': {
     /** Gets project's settings */
     get: operations['SettingsController_getProjectApi']
@@ -1201,6 +1209,10 @@ export interface paths {
     /** Creates a partner organization */
     post: operations['AwsPartnerOrganizationsSystemController_createPartnerOrganization']
   }
+  '/system/partner-organizations/{slug}': {
+    /** Converts an organization into a partner organization */
+    put: operations['AwsPartnerOrganizationsSystemController_convertToPartnerOrganization']
+  }
   '/system/projects': {
     /** Create a project */
     post: operations['SystemProjectsController_createProject']
@@ -1220,6 +1232,20 @@ export interface paths {
   '/system/projects/{ref}/credentials/aws': {
     /** Allows a project to obtain temporary credentials. */
     post: operations['AwsCredentialsController_getTemporaryCredentials']
+  }
+  '/system/projects/{ref}/disk': {
+    /** Get database disk attributes */
+    get: operations['SystemProjectDiskController_getDisk']
+    /** Modify database disk */
+    post: operations['SystemProjectDiskController_modifyDisk']
+  }
+  '/system/projects/{ref}/disk/util': {
+    /** Get disk utilization */
+    get: operations['SystemProjectDiskController_getDiskUtilization']
+  }
+  '/system/projects/{ref}/disk/volume_info': {
+    /** Get AWS disk volume information */
+    get: operations['SystemProjectDiskController_getAwsDiskInfo']
   }
   '/system/projects/{ref}/functions': {
     /**
@@ -1345,6 +1371,10 @@ export interface paths {
   '/v0/auth/{ref}/users/{id}/factors': {
     /** Delete all factors associated to a user */
     delete: operations['FactorsController_deleteFactors']
+  }
+  '/v0/auth/{ref}/validate/spam': {
+    /** Validate spam based on the given email content */
+    post: operations['ValidateController_validateSpam']
   }
   '/v0/database/{ref}/backups': {
     /** Gets project backups */
@@ -2087,6 +2117,12 @@ export interface paths {
     /** Updates project's Postgres config */
     put: operations['v1-update-postgres-config']
   }
+  '/v1/projects/{ref}/config/storage': {
+    /** Gets project's storage config */
+    get: operations['v1-get-storage-config']
+    /** Updates project's storage config */
+    patch: operations['v1-update-storage-config']
+  }
   '/v1/projects/{ref}/custom-hostname': {
     /** [Beta] Gets project's custom hostname config */
     get: operations['v1-get-hostname-config']
@@ -2556,9 +2592,8 @@ export interface components {
       uri_allow_list: string | null
     }
     AuthHealthResponse: {
-      description: string
-      name: string
-      version: string
+      /** @enum {string} */
+      name: 'GoTrue'
     }
     AutoApiService: {
       app: {
@@ -2673,16 +2708,19 @@ export interface components {
     }
     BranchResetResponse: {
       message: string
+      workflow_run_id: string
     }
     BranchResponse: {
       created_at: string
       git_branch?: string
       id: string
       is_default: boolean
+      /** Format: int64 */
       latest_check_run_id?: number
       name: string
       parent_project_ref: string
       persistent: boolean
+      /** Format: int32 */
       pr_number?: number
       project_ref: string
       reset_on_push: boolean
@@ -2719,6 +2757,9 @@ export interface components {
       is_grantable: boolean
       /** @enum {string} */
       privilege_type: 'ALL' | 'SELECT' | 'INSERT' | 'UPDATE' | 'REFERENCES'
+    }
+    ConvertIntoAwsPartnerOrganizationBody: {
+      partner_billing: components['schemas']['AwsPartnerBillingBody']
     }
     CopyObjectBody: {
       from: string
@@ -3248,7 +3289,7 @@ export interface components {
         | '8_attached_volume_to_upgraded_instance'
         | '9_completed_upgrade'
         | '10_completed_post_physical_backup'
-      /** @enum {number} */
+      /** @enum {integer} */
       status: 0 | 1 | 2
       target_version: number
     }
@@ -3451,6 +3492,7 @@ export interface components {
       query: string
     }
     FunctionResponse: {
+      /** Format: int64 */
       created_at: number
       entrypoint_path?: string
       id: string
@@ -3460,11 +3502,13 @@ export interface components {
       slug: string
       /** @enum {string} */
       status: 'ACTIVE' | 'REMOVED' | 'THROTTLED'
+      /** Format: int64 */
       updated_at: number
       verify_jwt?: boolean
       version: number
     }
     FunctionSlugResponse: {
+      /** Format: int64 */
       created_at: number
       entrypoint_path?: string
       id: string
@@ -3474,6 +3518,7 @@ export interface components {
       slug: string
       /** @enum {string} */
       status: 'ACTIVE' | 'REMOVED' | 'THROTTLED'
+      /** Format: int64 */
       updated_at: number
       verify_jwt?: boolean
       version: number
@@ -4197,6 +4242,7 @@ export interface components {
     }
     OAuthTokenResponse: {
       access_token: string
+      /** Format: int64 */
       expires_in: number
       refresh_token: string
       /** @enum {string} */
@@ -4475,6 +4521,7 @@ export interface components {
       session_replication_role?: 'origin' | 'replica' | 'local'
       shared_buffers?: string
       statement_timeout?: string
+      track_commit_timestamp?: boolean
       wal_keep_size?: string
       wal_sender_timeout?: string
       work_mem?: string
@@ -4788,10 +4835,6 @@ export interface components {
         | 'PAUSE_FAILED'
         | 'RESIZING'
       subscription_id: string
-      v2MaintenanceWindow: {
-        end?: string
-        start?: string
-      }
       volumeSizeGb?: number
     }
     ProjectInfo: {
@@ -4919,10 +4962,9 @@ export interface components {
       cloud_provider: string
       db_dns_name: string
       db_host: string
-      /** @enum {string|null} */
-      db_ip_addr_config: 'legacy' | 'static-ipv4' | 'concurrent-ipv6' | 'ipv6' | null
+      db_ip_addr_config: string
       db_name: string
-      db_port: string
+      db_port: number
       db_user: string
       inserted_at: string
       jwt_secret?: string
@@ -5014,8 +5056,6 @@ export interface components {
     }
     RealtimeHealthResponse: {
       connected_cluster: number
-      db_connected: boolean
-      healthy: boolean
     }
     Relationship: {
       constraint_name: string
@@ -5350,8 +5390,8 @@ export interface components {
       service_api_keys: components['schemas']['ServiceApiKeyResponse'][]
     }
     ServiceVersions: {
-      gotrue: string
-      postgrest: string
+      gotrue?: string
+      postgrest?: string
       'supabase-postgres': string
     }
     SettingsResponse: {
@@ -5433,6 +5473,7 @@ export interface components {
       visibility: 'user' | 'project' | 'org' | 'public'
     }
     SnippetProject: {
+      /** Format: int64 */
       id: number
       name: string
     }
@@ -5452,6 +5493,7 @@ export interface components {
       visibility: 'user' | 'project' | 'org' | 'public'
     }
     SnippetUser: {
+      /** Format: int64 */
       id: number
       username: string
     }
@@ -5479,8 +5521,15 @@ export interface components {
       updated_at: string
     }
     StorageConfigResponse: {
+      features: components['schemas']['StorageFeatures']
+      /** Format: int64 */
       fileSizeLimit: number
-      isFreeTier: boolean
+    }
+    StorageFeatureImageTransformation: {
+      enabled: boolean
+    }
+    StorageFeatures: {
+      imageTransformation: components['schemas']['StorageFeatureImageTransformation']
     }
     StorageObject: {
       bucket_id: string
@@ -6264,6 +6313,7 @@ export interface components {
       session_replication_role?: 'origin' | 'replica' | 'local'
       shared_buffers?: string
       statement_timeout?: string
+      track_commit_timestamp?: boolean
       wal_keep_size?: string
       wal_sender_timeout?: string
       work_mem?: string
@@ -6348,10 +6398,9 @@ export interface components {
       public: boolean
     }
     UpdateStorageConfigBody: {
-      fileSizeLimit: number
-    }
-    UpdateStorageConfigResponse: {
-      fileSizeLimit: number
+      features?: components['schemas']['StorageFeatures']
+      /** Format: int64 */
+      fileSizeLimit?: number
     }
     UpdateSubscriptionBody: {
       payment_method?: string
@@ -6690,7 +6739,9 @@ export interface components {
       pool_mode?: 'transaction' | 'session' | 'statement'
     }
     V1PhysicalBackup: {
+      /** Format: int64 */
       earliest_physical_backup_date_unix?: number
+      /** Format: int64 */
       latest_physical_backup_date_unix?: number
     }
     V1PostgrestConfigResponse: {
@@ -6701,6 +6752,7 @@ export interface components {
       max_rows: number
     }
     V1ProjectRefResponse: {
+      /** Format: int64 */
       id: number
       name: string
       ref: string
@@ -6742,6 +6794,7 @@ export interface components {
         | 'RESIZING'
     }
     V1RestorePitrBody: {
+      /** Format: int64 */
       recovery_time_target_unix: number
     }
     V1RunQueryBody: {
@@ -6776,6 +6829,18 @@ export interface components {
     }
     ValidateQueryResponse: {
       valid: boolean
+    }
+    ValidateSpamBody: {
+      content: string
+      subject: string
+    }
+    ValidateSpamResponse: {
+      rules: components['schemas']['ValidateSpamRule'][]
+    }
+    ValidateSpamRule: {
+      desc: string
+      name: string
+      score: number
     }
     ValidationError: {
       message: string
@@ -7486,6 +7551,28 @@ export interface operations {
       }
     }
   }
+  /** Validate spam based on the given email content */
+  ValidateController_validateSpam: {
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ValidateSpamBody']
+      }
+    }
+    responses: {
+      200: {
+        content: {
+          'application/json': components['schemas']['ValidateSpamResponse']
+        }
+      }
+      403: {
+        content: never
+      }
+      /** @description Failed to validate spam based on the given email content */
+      500: {
+        content: never
+      }
+    }
+  }
   /** Create CLI login session */
   CliLoginController_createCliLoginSession: {
     requestBody: {
@@ -7506,6 +7593,9 @@ export interface operations {
   /** Retrieve CLI login session */
   CliLoginController_getCliLoginSession: {
     parameters: {
+      query?: {
+        device_code?: string
+      }
       path: {
         session_id: string
       }
@@ -12308,7 +12398,7 @@ export interface operations {
     responses: {
       200: {
         content: {
-          'application/json': components['schemas']['UpdateStorageConfigResponse']
+          'application/json': components['schemas']['StorageConfigResponse']
         }
       }
       403: {
@@ -12650,7 +12740,46 @@ export interface operations {
   DailyStatsController_getDailyStats: {
     parameters: {
       query: {
-        attribute: string
+        attribute:
+          | 'total_realtime_requests'
+          | 'total_realtime_egress'
+          | 'avg_cpu_usage'
+          | 'total_ingress'
+          | 'total_egress'
+          | 'total_requests'
+          | 'total_get_requests'
+          | 'total_patch_requests'
+          | 'total_post_requests'
+          | 'total_delete_requests'
+          | 'total_options_requests'
+          | 'total_supavisor_egress_bytes'
+          | 'total_rest_ingress'
+          | 'total_rest_egress'
+          | 'total_rest_requests'
+          | 'total_rest_get_requests'
+          | 'total_rest_post_requests'
+          | 'total_rest_patch_requests'
+          | 'total_rest_delete_requests'
+          | 'total_rest_options_requests'
+          | 'total_auth_billing_period_mau'
+          | 'total_auth_billing_period_sso_mau'
+          | 'total_auth_ingress'
+          | 'total_auth_egress'
+          | 'total_auth_requests'
+          | 'total_auth_get_requests'
+          | 'total_auth_post_requests'
+          | 'total_auth_patch_requests'
+          | 'total_auth_options_requests'
+          | 'total_auth_delete_requests'
+          | 'total_storage_ingress'
+          | 'total_storage_egress'
+          | 'total_storage_image_render_count'
+          | 'total_storage_requests'
+          | 'total_storage_get_requests'
+          | 'total_storage_post_requests'
+          | 'total_storage_delete_requests'
+          | 'total_storage_options_requests'
+          | 'total_storage_patch_requests'
         interval: string
         endDate: string
         startDate: string
@@ -13078,6 +13207,22 @@ export interface operations {
       }
       403: {
         content: never
+      }
+    }
+  }
+  /** Gets service versions for a specific project */
+  ProjectServiceVersionsController_getServiceVersions: {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+      }
+    }
+    responses: {
+      200: {
+        content: {
+          'application/json': components['schemas']['ServiceVersions']
+        }
       }
     }
   }
@@ -14444,6 +14589,29 @@ export interface operations {
       }
     }
   }
+  /** Converts an organization into a partner organization */
+  AwsPartnerOrganizationsSystemController_convertToPartnerOrganization: {
+    parameters: {
+      path: {
+        /** @description Organization slug */
+        slug: string
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ConvertIntoAwsPartnerOrganizationBody']
+      }
+    }
+    responses: {
+      200: {
+        content: never
+      }
+      /** @description Unexpected error while converting organization into a partner organization */
+      500: {
+        content: never
+      }
+    }
+  }
   /** Create a project */
   SystemProjectsController_createProject: {
     requestBody: {
@@ -14536,6 +14704,92 @@ export interface operations {
       }
       /** @description Failed to obtain temporary credentials. */
       500: {
+        content: never
+      }
+    }
+  }
+  /** Get database disk attributes */
+  SystemProjectDiskController_getDisk: {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+      }
+    }
+    responses: {
+      200: {
+        content: {
+          'application/json': components['schemas']['DiskResponse']
+        }
+      }
+      403: {
+        content: never
+      }
+      /** @description Failed to get database disk attributes */
+      500: {
+        content: never
+      }
+    }
+  }
+  /** Modify database disk */
+  SystemProjectDiskController_modifyDisk: {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DiskRequestBody']
+      }
+    }
+    responses: {
+      201: {
+        content: never
+      }
+      403: {
+        content: never
+      }
+      /** @description Failed to modify database disk */
+      500: {
+        content: never
+      }
+    }
+  }
+  /** Get disk utilization */
+  SystemProjectDiskController_getDiskUtilization: {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+      }
+    }
+    responses: {
+      200: {
+        content: {
+          'application/json': components['schemas']['DiskUtilMetricsResponse']
+        }
+      }
+      403: {
+        content: never
+      }
+      /** @description Failed to get disk utilization */
+      500: {
+        content: never
+      }
+    }
+  }
+  /** Get AWS disk volume information */
+  SystemProjectDiskController_getAwsDiskInfo: {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+      }
+    }
+    responses: {
+      200: {
         content: never
       }
     }
@@ -15619,6 +15873,55 @@ export interface operations {
       }
     }
   }
+  /** Gets project's storage config */
+  'v1-get-storage-config': {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+      }
+    }
+    responses: {
+      200: {
+        content: {
+          'application/json': components['schemas']['StorageConfigResponse']
+        }
+      }
+      403: {
+        content: never
+      }
+      /** @description Failed to retrieve project's storage config */
+      500: {
+        content: never
+      }
+    }
+  }
+  /** Updates project's storage config */
+  'v1-update-storage-config': {
+    parameters: {
+      path: {
+        /** @description Project ref */
+        ref: string
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateStorageConfigBody']
+      }
+    }
+    responses: {
+      200: {
+        content: never
+      }
+      403: {
+        content: never
+      }
+      /** @description Failed to update project's storage config */
+      500: {
+        content: never
+      }
+    }
+  }
   /** [Beta] Gets project's custom hostname config */
   'v1-get-hostname-config': {
     parameters: {
@@ -15896,6 +16199,9 @@ export interface operations {
         content: {
           'application/json': components['schemas']['V1ServiceHealthResponse'][]
         }
+      }
+      403: {
+        content: never
       }
       /** @description Failed to retrieve project's service health status */
       500: {
