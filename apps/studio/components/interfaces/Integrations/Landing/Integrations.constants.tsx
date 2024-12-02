@@ -26,7 +26,7 @@ const Loading = () => (
 export type IntegrationDefinition = {
   id: string
   name: string
-  beta?: boolean
+  status?: 'alpha' | 'beta'
   icon: (props?: { className?: string; style?: Record<string, any> }) => ReactNode
   description: string
   docsUrl: string
@@ -170,7 +170,7 @@ const supabaseIntegrations: IntegrationDefinition[] = [
     type: 'postgres_extension' as const,
     requiredExtensions: ['supabase_vault'],
     name: `Vault`,
-    beta: true,
+    status: 'alpha',
     icon: ({ className, ...props } = {}) => (
       <Vault className={cn('inset-0 p-2 text-black w-full h-full', className)} {...props} />
     ),
@@ -226,8 +226,8 @@ const supabaseIntegrations: IntegrationDefinition[] = [
   },
   {
     id: 'webhooks',
-    type: 'custom' as const,
-    name: `Webhooks`,
+    type: 'postgres_extension' as const,
+    name: `Database Webhooks`,
     icon: ({ className, ...props } = {}) => (
       <Webhook className={cn('inset-0 p-2 text-black w-full h-full', className)} {...props} />
     ),
@@ -276,7 +276,7 @@ const supabaseIntegrations: IntegrationDefinition[] = [
     id: 'graphiql',
     type: 'postgres_extension' as const,
     requiredExtensions: ['pg_graphql'],
-    name: `GraphiQL`,
+    name: `GraphQL`,
     icon: ({ className, ...props } = {}) => (
       <Image
         fill
