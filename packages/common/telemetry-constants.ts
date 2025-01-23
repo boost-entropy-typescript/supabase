@@ -11,6 +11,8 @@ export enum TelemetryActions {
   ASSISTANT_EDIT_IN_SQL_EDITOR_CLICKED = 'assistant_edit_in_sql_editor_clicked',
 
   CONNECTION_STRING_COPIED = 'connection_string_copied',
+  CUSTOM_REPORT_ADD_SQL_BLOCK_CLICKED = 'custom-report-add-sql-block-clicked',
+  CUSTOM_REPORT_ASSISTANT_SQL_BLOCK_ADDED = 'custom-report-assistant-sql-block-added',
 
   CRON_JOB_CREATED = 'cron_job_created',
   CRON_JOB_UPDATED = 'cron_job_updated',
@@ -24,6 +26,7 @@ export enum TelemetryActions {
   FEATURE_PREVIEW_ENABLED = 'feature_preview_enabled',
   FEATURE_PREVIEW_DISABLED = 'feature_preview_disabled',
 
+  PROJECT_CREATION_SIMPLE_VERSION_SUBMITTED = 'project_creation_simple_version_submitted',
   PROJECT_CREATION_INITIAL_STEP_PROMPT_INTENDED = 'project_creation_initial_step_prompt_intended',
   PROJECT_CREATION_INITIAL_STEP_SUBMITTED = 'project_creation_initial_step_submitted',
   PROJECT_CREATION_SECOND_STEP_PROMPT_INTENDED = 'project_creation_second_step_prompt_intended',
@@ -51,6 +54,11 @@ export enum TelemetryActions {
   PRICING_PLAN_CTA_CLICKED = 'pricing_plan_cta_clicked',
   PRICING_COMPARISON_PLAN_CLICKED = 'pricing_comparison_plan_clicked',
   EVENT_PAGE_CTA_CLICKED = 'event_page_cta_clicked',
+  HOMEPAGE_GITHUB_BUTTON_CLICKED = 'homepage_github_button_clicked',
+  HOMEPAGE_GITHUB_DISCUSSIONS_BUTTON_CLICKED = 'homepage_github_discussions_button_clicked',
+  HOMEPAGE_DISCORD_BUTTON_CLICKED = 'homepage_discord_button_clicked',
+  HOMEPAGE_CUSTOMER_STORY_CARD_CLICKED = 'homepage_customer_story_card_clicked',
+  HOMEPAGE_PROJECT_TEMPLATE_CARD_CLICKED = 'homepage_project_template_card_clicked',
 }
 
 /**
@@ -295,6 +303,17 @@ export interface FeaturePreviewDisabledEvent {
     project: string
     organization: string
   }
+}
+
+/**
+ * Existing project creation form was submitted and the project was created.
+ *
+ * @group Events
+ * @source studio
+ * @page new/{slug}
+ */
+export interface ProjectCreationSimpleVersionSubmittedEvent {
+  action: TelemetryActions.PROJECT_CREATION_SIMPLE_VERSION_SUBMITTED
 }
 
 /**
@@ -628,6 +647,28 @@ export interface AssistantEditInSqlEditorClickedEvent {
 }
 
 /**
+ * User clicked on Add block -> SQL Snippets -> a SQL snippet in a custom reports page.
+ *
+ * @group Events
+ * @source studio
+ * @page /dashboard/project/{ref}/reports/{id}
+ */
+export interface CustomReportAddSQLBlockClicked {
+  action: TelemetryActions.CUSTOM_REPORT_ADD_SQL_BLOCK_CLICKED
+}
+
+/**
+ * User dragged and dropped a SQL block from the Assistant Panel into the custom report while on a custom report page.
+ *
+ * @group Events
+ * @source studio
+ * @page /dashboard/project/{ref}/reports/{id}
+ */
+export interface CustomReportAssistantSQLBlockAdded {
+  action: TelemetryActions.CUSTOM_REPORT_ASSISTANT_SQL_BLOCK_ADDED
+}
+
+/**
  * User voted on the feedback button on a docs page. The feedback button is located at the sidebar of every docs page.
  *
  * @group Events
@@ -754,6 +795,74 @@ export interface EventPageCtaClickedEvent {
   }
 }
 
+/**
+ * User clicked on the GitHub button in the homepage header section. Is hidden when in mobile view.
+ *
+ * @group Events
+ * @source www
+ * @page /
+ */
+export interface HomepageGitHubButtonClickedEvent {
+  action: TelemetryActions.HOMEPAGE_GITHUB_BUTTON_CLICKED
+}
+
+/**
+ * User clicked on the GitHub Discussions button in the homepage community section.
+ *
+ * @group Events
+ * @source www
+ * @page /
+ */
+export interface HomepageGitHubDiscussionsButtonClickedEvent {
+  action: TelemetryActions.HOMEPAGE_GITHUB_DISCUSSIONS_BUTTON_CLICKED
+}
+
+/**
+ * User clicked on the Discord button in the homepage community section.
+ *
+ * @group Events
+ * @source www
+ * @page /
+ */
+export interface HomepageDiscordButtonClickedEvent {
+  action: TelemetryActions.HOMEPAGE_DISCORD_BUTTON_CLICKED
+}
+
+/**
+ * User clicked on a customer story in the homepage.
+ *
+ * @group Events
+ * @source www
+ * @page /
+ */
+export interface HomepageCustomerStoryCardClickedEvent {
+  action: TelemetryActions.HOMEPAGE_CUSTOMER_STORY_CARD_CLICKED
+  properties: {
+    customer?: string
+    /**
+     * The size of the card clicked.
+     */
+    cardType: 'expanded' | 'narrow'
+  }
+}
+
+/**
+ * User clicked on a project template card in the homepage.
+ *
+ * @group Events
+ * @source www
+ * @page /
+ */
+export interface HomepageProjectTemplateCardClickedEvent {
+  action: TelemetryActions.HOMEPAGE_PROJECT_TEMPLATE_CARD_CLICKED
+  properties: {
+    /**
+     * The title of the project template card clicked.
+     */
+    templateTitle: string
+  }
+}
+
 export type TelemetryEvent =
   | SignUpEvent
   | SignInEvent
@@ -768,6 +877,7 @@ export type TelemetryEvent =
   | FeaturePreviewsClickedEvent
   | FeaturePreviewEnabledEvent
   | FeaturePreviewDisabledEvent
+  | ProjectCreationSimpleVersionSubmittedEvent
   | ProjectCreationInitialStepPromptIntendedEvent
   | ProjectCreationInitialStepSubmittedEvent
   | ProjectCreationSecondStepPromptIntendedEvent
@@ -796,3 +906,10 @@ export type TelemetryEvent =
   | PricingPlanCtaClickedEvent
   | PricingComparisonPlanClickedEvent
   | EventPageCtaClickedEvent
+  | HomepageGitHubButtonClickedEvent
+  | HomepageGitHubDiscussionsButtonClickedEvent
+  | HomepageDiscordButtonClickedEvent
+  | HomepageCustomerStoryCardClickedEvent
+  | HomepageProjectTemplateCardClickedEvent
+  | CustomReportAddSQLBlockClicked
+  | CustomReportAssistantSQLBlockAdded
