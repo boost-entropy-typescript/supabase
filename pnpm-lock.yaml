@@ -7,8 +7,8 @@ settings:
 catalogs:
   default:
     '@supabase/auth-js':
-      specifier: ^2.67.3
-      version: 2.67.3
+      specifier: 2.68.0-rc.6
+      version: 2.68.0-rc.6
     '@supabase/realtime-js':
       specifier: ^2.11.3
       version: 2.11.3
@@ -21,6 +21,9 @@ catalogs:
     next:
       specifier: 14.2.21
       version: 14.2.21
+
+overrides:
+  '@supabase/supabase-js>@supabase/auth-js': 2.68.0-rc.6
 
 importers:
 
@@ -567,7 +570,7 @@ importers:
         version: 5.5.0
       '@supabase/auth-js':
         specifier: 'catalog:'
-        version: 2.67.3
+        version: 2.68.0-rc.6
       '@supabase/pg-meta':
         specifier: workspace:*
         version: link:../../packages/pg-meta
@@ -613,9 +616,6 @@ importers:
       awesome-debounce-promise:
         specifier: ^2.1.0
         version: 2.1.0
-      cobe:
-        specifier: ^0.6.3
-        version: 0.6.3
       common:
         specifier: workspace:*
         version: link:../../packages/common
@@ -1329,7 +1329,7 @@ importers:
     dependencies:
       '@supabase/auth-js':
         specifier: 'catalog:'
-        version: 2.67.3
+        version: 2.68.0-rc.6
       '@supabase/supabase-js':
         specifier: 'catalog:'
         version: 2.47.14
@@ -5281,8 +5281,8 @@ packages:
     resolution: {integrity: sha512-lkfjyAd34aeMpTKKcEVfy8IUyEsjuAT3t9EXr5yZDtdIUncnZpedl/xLV16Dkd4z+fQwixScsCCDxSMNtBOgpQ==}
     engines: {node: '>=12.16'}
 
-  '@supabase/auth-js@2.67.3':
-    resolution: {integrity: sha512-NJDaW8yXs49xMvWVOkSIr8j46jf+tYHV0wHhrwOaLLMZSFO4g6kKAf+MfzQ2RaD06OCUkUHIzctLAxjTgEVpzw==}
+  '@supabase/auth-js@2.68.0-rc.6':
+    resolution: {integrity: sha512-xq3DDNBD33KTGHCYSAMUmDbcxe+thCTVvlcO/5uixjKhRku0LNMUIm5P67ViDQDmf0OYUqd+vdiAtpmyhL2B/Q==}
 
   '@supabase/functions-js@2.4.4':
     resolution: {integrity: sha512-WL2p6r4AXNGwop7iwvul2BvOtuJ1YQy8EbOd0dhG1oN1q8el/BIRSFCFnWAMM/vJJlHWLi4ad22sKbKr9mvjoA==}
@@ -7659,6 +7659,7 @@ packages:
     resolution: {integrity: sha512-t0q23FIpvHDTtnORW+bDJziGsal5uh9RJTJ1fyH8drd4lICOoXhJ5pLMUZ5C0VQei6dNmwTzzoTRgMkO9JgHEQ==}
     peerDependencies:
       eslint: '>= 5'
+    bundledDependencies: []
 
   eslint-plugin-import@2.29.1:
     resolution: {integrity: sha512-BbPC0cuExzhiMo4Ff1BTVwHpjjv28C5R+btTOGaCRC7UEz801up0JadwkeSk5Ued6TG34uaczuVuH6qyy5YUxw==}
@@ -17437,7 +17438,7 @@ snapshots:
 
   '@stripe/stripe-js@5.5.0': {}
 
-  '@supabase/auth-js@2.67.3':
+  '@supabase/auth-js@2.68.0-rc.6':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
@@ -17536,7 +17537,7 @@ snapshots:
 
   '@supabase/supabase-js@2.47.14':
     dependencies:
-      '@supabase/auth-js': 2.67.3
+      '@supabase/auth-js': 2.68.0-rc.6
       '@supabase/functions-js': 2.4.4
       '@supabase/node-fetch': 2.6.15
       '@supabase/postgrest-js': 1.17.11
