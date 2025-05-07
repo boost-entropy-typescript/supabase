@@ -6,6 +6,11 @@ import { supabase, type DatabaseCorrected } from '~/lib/supabase'
 import { GuideModel } from '../guide/guideModel'
 import { ReferenceSDKFunctionModel, SDKLanguageValues } from '../reference/referenceSDKModel'
 import { SearchResultInterface } from './globalSearchInterface'
+import { TroubleshootingModel } from '../troubleshooting/troubleshootingModel'
+import {
+  DB_METADATA_TAG_PLATFORM_CLI,
+  ReferenceCLICommandModel,
+} from '../reference/referenceCLIModel'
 
 export abstract class SearchResultModel {
   static async search(
@@ -58,7 +63,22 @@ function createModelFromMatch({
           language,
           methodName: metadata.methodName,
         })
+      } else if (metadata.platform === DB_METADATA_TAG_PLATFORM_CLI) {
+        return new ReferenceCLICommandModel({
+          title: page_title,
+          href,
+          content,
+          subsections,
+        })
+      } else {
+        break
       }
+    case 'github-discussions':
+      return new TroubleshootingModel({
+        title: page_title,
+        href,
+        content,
+      })
     default:
       return null
   }
