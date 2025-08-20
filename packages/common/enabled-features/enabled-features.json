@@ -6,6 +6,17 @@
   "ai:opt_in_level_schema_and_log": true,
   "ai:opt_in_level_schema_and_log_and_data": true,
 
+  "authentication:policies": true,
+  "authentication:sign_in_providers": true,
+  "authentication:third_party_auth": true,
+  "authentication:rate_limits": true,
+  "authentication:emails": true,
+  "authentication:multi_factor": true,
+  "authentication:attack_protection": true,
+  "authentication:advanced": true,
+
+  "authentication:show_providers": true,
+  "authentication:show_manual_linking": true,
   "authentication:show_send_invitation": true,
   "authentication:show_provider_filter": true,
   "authentication:show_sort_by_email": true,
@@ -18,6 +29,7 @@
   "database:roles": true,
 
   "integrations:vercel": true,
+  "integrations:show_stripe_wrapper": true,
 
   "logs:templates": true,
   "logs:collections": true,
@@ -33,6 +45,14 @@
   "project_homepage:show_all_client_libraries": true,
   "project_homepage:show_instance_size": true,
   "project_homepage:show_examples": true,
+
+  "project_addons:dedicated_ipv4_address": true,
+  "project_settings:custom_domains": true,
+  "project_settings:show_disable_legacy_api_keys": true,
+  "project_settings:legacy_jwt_keys": true,
+  "project_settings:log_drains": true,
+
+  "reports:all": true,
 
   "table_editor:enable_rls_toggle": true
 }
