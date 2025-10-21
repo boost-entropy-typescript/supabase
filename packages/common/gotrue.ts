@@ -129,7 +129,7 @@ async function debuggableNavigatorLock<R>(
   let stackException: any
 
   try {
-    throw new Error('Lock is being held for over 2s here')
+    throw new Error('Lock is being held for over 10s here')
   } catch (e: any) {
     stackException = e
   }
@@ -144,12 +144,12 @@ async function debuggableNavigatorLock<R>(
       }
 
       console.error(
-        `Waited for over 2s to acquire an Auth client lock`,
+        `Waited for over 10s to acquire an Auth client lock`,
         await navigator.locks.query(),
         stackException
       )
     })()
-  }, 2000)
+  }, 10000)
 
   try {
     return await navigatorLock(name, acquireTimeout, async () => {
@@ -177,17 +177,17 @@ async function debuggableNavigatorLock<R>(
 
 // Wrap fetch with 30-second timeout to prevent indefinite hangs
 const fetchWithTimeout: typeof fetch = async (input, init) => {
-  const timeoutSignal = AbortSignal.timeout(30000); // 30 seconds
-  const existingSignal = init?.signal;
+  const timeoutSignal = AbortSignal.timeout(30000) // 30 seconds
+  const existingSignal = init?.signal
   const combinedSignal = existingSignal
     ? AbortSignal.any([existingSignal, timeoutSignal])
-    : timeoutSignal;
+    : timeoutSignal
 
   return fetch(input, {
     ...init,
     signal: combinedSignal,
-  });
-};
+  })
+}
 
 export const gotrueClient = new AuthClient({
   url: process.env.NEXT_PUBLIC_GOTRUE_URL,
