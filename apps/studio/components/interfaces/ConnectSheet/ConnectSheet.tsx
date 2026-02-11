@@ -8,16 +8,27 @@ import { useMemo } from 'react'
 import { cn, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from 'ui'
 
 import type { ProjectKeys } from './Connect.types'
-import { ConnectConfigSection } from './ConnectConfigSection'
+import { ConnectConfigSection, ModeSelector } from './ConnectConfigSection'
 import { ConnectStepsSection } from './ConnectStepsSection'
 import { useConnectState } from './useConnectState'
+import { useIsFeatureEnabled } from '@/hooks/misc/useIsFeatureEnabled'
 
 export const ConnectSheet = () => {
+  const {
+    projectConnectionShowAppFrameworks: showAppFrameworks,
+    projectConnectionShowMobileFrameworks: showMobileFrameworks,
+    projectConnectionShowOrms: showOrms,
+  } = useIsFeatureEnabled([
+    'project_connection:show_app_frameworks',
+    'project_connection:show_mobile_frameworks',
+    'project_connection:show_orms',
+  ])
+
   const [showConnect, setShowConnect] = useQueryState(
     'showConnect',
     parseAsBoolean.withDefault(false)
   )
-  const [connectTab, setConnectTab] = useQueryState('connectTab', parseAsString)
+  const [, setConnectTab] = useQueryState('connectTab', parseAsString)
 
   const handleOpenChange = (sheetOpen: boolean) => {
     if (!sheetOpen) {
@@ -26,7 +37,8 @@ export const ConnectSheet = () => {
     setShowConnect(sheetOpen)
   }
 
-  const { state, updateField, activeFields, resolvedSteps, getFieldOptions } = useConnectState()
+  const { state, activeFields, resolvedSteps, schema, getFieldOptions, setMode, updateField } =
+    useConnectState()
 
   // Project keys for step components
   const { ref: projectRef } = useParams()
@@ -58,6 +70,23 @@ export const ConnectSheet = () => {
     publishableKey?.api_key,
   ])
 
+  const availableModeIds = useMemo(() => {
+    const modes: string[] = []
+    const showFrameworks = showAppFrameworks || showMobileFrameworks
+
+    if (showFrameworks) modes.push('framework')
+    modes.push('direct')
+    if (showOrms) modes.push('orm')
+    modes.push('mcp')
+
+    return modes
+  }, [showAppFrameworks, showMobileFrameworks, showOrms])
+
+  const availableModes = useMemo(
+    () => schema.modes.filter((m) => availableModeIds.includes(m.id)),
+    [schema.modes, availableModeIds]
+  )
+
   return (
     <Sheet open={showConnect} onOpenChange={handleOpenChange}>
       <SheetContent size="lg" className="flex flex-col gap-0 p-0 space-y-0" tabIndex={undefined}>
@@ -66,11 +95,15 @@ export const ConnectSheet = () => {
           <SheetDescription>Choose how you want to use Supabase</SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-1 flex-col overflow-y-auto">
+        <div className="flex flex-1 flex-col overflow-y-auto divide-y">
+          <div className="p-8">
+            <ModeSelector modes={availableModes} selected={state.mode} onChange={setMode} />
+          </div>
+
           <div className="border-b p-8">
             <ConnectConfigSection
-              activeFields={activeFields}
               state={state}
+              activeFields={activeFields}
               onFieldChange={updateField}
               getFieldOptions={getFieldOptions}
             />

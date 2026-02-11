@@ -1,4 +1,4 @@
-type ConnectionStringPooler = {
+type ConnectionStrings = {
   psql: string
   uri: string
   golang: string
@@ -10,7 +10,7 @@ type ConnectionStringPooler = {
   sqlalchemy: string
 }
 
-export const getConnectionStringPooler = ({
+export const getConnectionStrings = ({
   connectionInfo,
   poolingInfo,
   metadata,
@@ -33,10 +33,10 @@ export const getConnectionStringPooler = ({
     pgVersion?: string
   }
 }): {
-  direct: ConnectionStringPooler
-  pooler: ConnectionStringPooler
+  direct: ConnectionStrings
+  pooler: ConnectionStrings
 } => {
-  const isMd5 = poolingInfo?.connectionString?.includes('options=reference')
+  const isMd5 = poolingInfo?.connectionString.includes('options=reference')
   const { projectRef } = metadata
   const password = '[YOUR-PASSWORD]'
 

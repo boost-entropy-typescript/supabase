@@ -19,7 +19,7 @@ import type {
 } from './Connect.types'
 import { ConnectSheetStep } from './ConnectSheetStep'
 import { CopyPromptAdmonition } from './CopyPromptAdmonition'
-import { getConnectionStringPooler } from './DatabaseSettings.utils'
+import { getConnectionStrings } from './DatabaseSettings.utils'
 
 interface ConnectStepsSectionProps {
   steps: ResolvedStep[]
@@ -67,7 +67,7 @@ function useConnectionStringPooler(): ConnectionStringPooler {
   const poolingConfigurationShared = supavisorConfig?.find((x) => x.database_type === 'PRIMARY')
   const poolingConfigurationDedicated = allowPgBouncerSelection ? pgbouncerConfig : undefined
 
-  const ConnectionStringPoolerShared = getConnectionStringPooler({
+  const connectionStringsShared = getConnectionStrings({
     connectionInfo,
     poolingInfo: {
       connectionString: poolingConfigurationShared?.connection_string ?? '',
@@ -79,9 +79,9 @@ function useConnectionStringPooler(): ConnectionStringPooler {
     metadata: { projectRef },
   })
 
-  const ConnectionStringPoolerDedicated =
+  const connectionStringsDedicated =
     poolingConfigurationDedicated !== undefined
-      ? getConnectionStringPooler({
+      ? getConnectionStrings({
           connectionInfo,
           poolingInfo: {
             connectionString: poolingConfigurationDedicated.connection_string,
@@ -96,14 +96,14 @@ function useConnectionStringPooler(): ConnectionStringPooler {
 
   return useMemo(
     () => ({
-      transactionShared: ConnectionStringPoolerShared.pooler.uri,
-      sessionShared: ConnectionStringPoolerShared.pooler.uri.replace('6543', '5432'),
-      transactionDedicated: ConnectionStringPoolerDedicated?.pooler.uri,
-      sessionDedicated: ConnectionStringPoolerDedicated?.pooler.uri.replace('6543', '5432'),
+      transactionShared: connectionStringsShared.pooler.uri,
+      sessionShared: connectionStringsShared.pooler.uri.replace('6543', '5432'),
+      transactionDedicated: connectionStringsDedicated?.pooler.uri,
+      sessionDedicated: connectionStringsDedicated?.pooler.uri.replace('6543', '5432'),
       ipv4SupportedForDedicatedPooler: !!ipv4Addon,
-      direct: ConnectionStringPoolerShared.direct.uri,
+      direct: connectionStringsShared.direct.uri,
     }),
-    [ConnectionStringPoolerShared, ConnectionStringPoolerDedicated, ipv4Addon]
+    [connectionStringsShared, connectionStringsDedicated, ipv4Addon]
   )
 }
 

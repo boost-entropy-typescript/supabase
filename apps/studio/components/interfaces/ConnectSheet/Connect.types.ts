@@ -51,7 +51,15 @@ export type ConditionalValue<T> =
 // Schema Types - Modes
 // ============================================================================
 
-type ConnectMode = string
+export type ConnectMode = 'framework' | 'direct' | 'orm' | 'mcp'
+
+export interface ModeDefinition {
+  id: ConnectMode
+  label: string
+  description: string
+  icon?: string
+  fields: string[] // References to field IDs
+}
 
 // ============================================================================
 // Schema Types - Fields
@@ -73,8 +81,8 @@ interface FieldDefinition {
   type: FieldType
   label: string
   description?: string
-  // Options can be static, conditional, or resolved from state
-  options?: FieldOption[] | ConditionalValue<FieldOption[]> | FieldOptionsResolver
+  // Options can be static, or reference a data source, or be conditional
+  options?: FieldOption[] | { source: string } | ConditionalValue<FieldOption[]>
   // Only show this field when these state conditions are met
   dependsOn?: Record<string, string[]>
   // Default value for this field
@@ -109,6 +117,7 @@ export type StepFieldValueMap = {
 // ============================================================================
 
 export interface ConnectSchema {
+  modes: ModeDefinition[]
   fields: Record<string, FieldDefinition>
   // Steps are fully conditional based on state
   steps: StepTree

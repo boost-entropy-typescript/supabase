@@ -11,6 +11,22 @@ import type {
 } from './Connect.types'
 
 /**
+ * The order in which state keys are checked during conditional value resolution.
+ * Used for ConditionalValue (value-keyed) resolution, not for step trees.
+ */
+const STATE_KEY_ORDER = [
+  'mode',
+  'framework',
+  'frameworkVariant',
+  'library',
+  'frameworkUi',
+  'orm',
+  'connectionMethod',
+  'connectionType',
+  'mcpClient',
+] as const
+
+/**
  * Check if a value is a conditional object (has nested state keys or DEFAULT)
  */
 function isConditionalObject(value: unknown): value is Record<string, unknown> {
@@ -22,7 +38,7 @@ function isConditionalObject(value: unknown): value is Record<string, unknown> {
  * Walks the tree using stateKeys in order, falling back to DEFAULT at each level.
  *
  * Example: Given state { mode: 'mcp', mcpClient: 'codex' }
- * and stateKeys derived from schema field order
+ * and stateKeys ['mode', 'framework', ..., 'mcpClient']
  *
  * 1. Look up 'mcp' (state.mode value) in tree -> found, continue
  * 2. At mcp subtree { codex: [...], DEFAULT: [...] }, skip irrelevant keys
@@ -33,7 +49,7 @@ function isConditionalObject(value: unknown): value is Record<string, unknown> {
 export function resolveConditional<T>(
   value: ConditionalValue<T>,
   state: ConnectState,
-  stateKeys: readonly string[] = Object.keys(state)
+  stateKeys: readonly string[] = STATE_KEY_ORDER
 ): T | undefined {
   // Base case: we've reached a leaf value (string, array, null, boolean, etc.)
   if (!isConditionalObject(value)) {
@@ -71,12 +87,10 @@ export function resolveConditional<T>(
 export function resolveSteps(schema: ConnectSchema, state: ConnectState): ResolvedStep[] {
   const steps = resolveStepTree(schema.steps, state)
   if (steps.length === 0) return []
-  const stateKeys = Object.keys(schema.fields)
-  const resolutionKeys = stateKeys.length > 0 ? stateKeys : Object.keys(state)
 
   return steps
     .map((step) => {
-      const content = resolveConditional<string | null>(step.content, state, resolutionKeys)
+      const content = resolveConditional<string | null>(step.content, state)
       return {
         id: step.id,
         title: step.title,
@@ -130,9 +144,10 @@ function resolveStepBranch(
  * Gets the active fields for the current mode, filtering by dependsOn conditions.
  */
 export function getActiveFields(schema: ConnectSchema, state: ConnectState): ResolvedField[] {
-  const stateKeys = Object.keys(schema.fields)
+  const currentMode = schema.modes.find((m) => m.id === state.mode)
+  if (!currentMode) return []
 
-  return stateKeys
+  return currentMode.fields
     .map((fieldId) => schema.fields[fieldId])
     .filter((field): field is NonNullable<typeof field> => !!field)
     .filter((field) => {
@@ -145,18 +160,14 @@ export function getActiveFields(schema: ConnectSchema, state: ConnectState): Res
     })
     .map((field) => ({
       ...field,
-      resolvedOptions: resolveFieldOptions(field, state, stateKeys),
+      resolvedOptions: resolveFieldOptions(field, state),
     }))
 }
 
 /**
  * Resolves field options based on current state.
  */
-function resolveFieldOptions(
-  field: { options?: unknown },
-  state: ConnectState,
-  stateKeys: readonly string[]
-): FieldOption[] {
+function resolveFieldOptions(field: { options?: unknown }, state: ConnectState): FieldOption[] {
   if (!field.options) return []
 
   // Static options array
@@ -164,118 +175,80 @@ function resolveFieldOptions(
     return field.options
   }
 
-  if (typeof field.options === 'function') {
-    return (field.options as (state: ConnectState) => FieldOption[])(state)
+  // Reference to data source (handled elsewhere)
+  if (
+    typeof field.options === 'object' &&
+    'source' in field.options &&
+    typeof field.options.source === 'string'
+  ) {
+    // This will be resolved by the component using getFieldOptionsFromSource
+    return []
   }
 
   // Conditional options
-  if (typeof field.options === 'object') {
-    const resolved = resolveConditional<FieldOption[]>(
-      field.options as ConditionalValue<FieldOption[]>,
-      state,
-      stateKeys
-    )
-    return resolved ?? []
-  }
-
-  return []
-}
-
-/**
- * Normalizes state values based on schema defaults, options, and dependencies.
- */
-export function resolveState(
-  schema: ConnectSchema,
-  inputState: Partial<ConnectState>
-): ConnectState {
-  const next: ConnectState = { ...(inputState as ConnectState) }
-
-  const maxIterations = Math.max(1, Object.keys(schema.fields).length + 1)
-
-  for (let iteration = 0; iteration < maxIterations; iteration++) {
-    let changed = false
-    const activeFields = getActiveFields(schema, next)
-
-    for (const field of activeFields) {
-      const currentValue = next[field.id]
-      const optionValues = field.resolvedOptions.map((option) => option.value)
-      const hasOptions = optionValues.length > 0
-
-      if (field.type === 'switch') {
-        if (typeof currentValue !== 'boolean' && typeof field.defaultValue === 'boolean') {
-          next[field.id] = field.defaultValue
-          changed = true
-        }
-        continue
-      }
-
-      if (field.type === 'multi-select') {
-        if (Array.isArray(currentValue)) {
-          if (hasOptions) {
-            const filtered = currentValue.filter((value) => optionValues.includes(String(value)))
-            if (filtered.length !== currentValue.length) {
-              next[field.id] = filtered
-              changed = true
-            }
-          }
-        } else if (Array.isArray(field.defaultValue)) {
-          next[field.id] = field.defaultValue
-          changed = true
-        }
-        continue
-      }
-
-      if (typeof currentValue !== 'string') {
-        let nextValue: string | undefined
-
-        if (
-          typeof field.defaultValue === 'string' &&
-          (!hasOptions || optionValues.includes(field.defaultValue))
-        ) {
-          nextValue = field.defaultValue
-        } else if (hasOptions) {
-          nextValue = optionValues[0]
-        }
-
-        if (nextValue !== undefined) {
-          next[field.id] = nextValue
-          changed = true
-        }
-        continue
-      }
-
-      if (hasOptions && !optionValues.includes(currentValue)) {
-        let nextValue: string | undefined
-
-        if (typeof field.defaultValue === 'string' && optionValues.includes(field.defaultValue)) {
-          nextValue = field.defaultValue
-        } else {
-          nextValue = optionValues[0]
-        }
-
-        if (nextValue !== currentValue) {
-          next[field.id] = nextValue
-          changed = true
-        }
-      }
-    }
-
-    if (!changed) break
-  }
-
-  const activeIds = new Set(getActiveFields(schema, next).map((field) => field.id))
-  Object.keys(schema.fields).forEach((fieldId) => {
-    if (!activeIds.has(fieldId)) {
-      delete next[fieldId]
-    }
-  })
-
-  return next
+  const resolved = resolveConditional<FieldOption[]>(
+    field.options as ConditionalValue<FieldOption[]>,
+    state
+  )
+  return resolved ?? []
 }
 
 /**
  * Gets default state for the schema, using first mode and default field values.
  */
 export function getDefaultState(schema: ConnectSchema): ConnectState {
-  return resolveState(schema, {})
+  const defaultMode = schema.modes[0]?.id ?? 'direct'
+
+  const state: ConnectState = { mode: defaultMode }
+
+  // Set default values for all fields
+  Object.values(schema.fields).forEach((field) => {
+    if (field.defaultValue !== undefined) {
+      state[field.id] = field.defaultValue
+    }
+  })
+
+  return state
+}
+
+/**
+ * Resets dependent fields when a parent field changes.
+ * For example, changing framework should reset frameworkVariant.
+ */
+export function resetDependentFields(
+  state: ConnectState,
+  changedFieldId: string,
+  schema: ConnectSchema
+): ConnectState {
+  const newState = { ...state }
+
+  // Find fields that depend on the changed field
+  Object.values(schema.fields).forEach((field) => {
+    if (field.dependsOn && changedFieldId in field.dependsOn) {
+      // Only reset if dependency conditions are no longer satisfied
+      const dependencySatisfied = Object.entries(field.dependsOn).every(([key, values]) => {
+        const stateValue = String(newState[key] ?? '')
+        return values.includes(stateValue)
+      })
+
+      if (!dependencySatisfied) {
+        delete newState[field.id]
+      }
+    }
+  })
+
+  // Special case: changing mode resets all mode-specific fields
+  if (changedFieldId === 'mode') {
+    const previousMode = schema.modes.find((m) => m.id !== state.mode)
+    const currentMode = schema.modes.find((m) => m.id === state.mode)
+
+    // Reset fields from previous mode that aren't in current mode
+    previousMode?.fields.forEach((fieldId) => {
+      if (!currentMode?.fields.includes(fieldId)) {
+        delete newState[fieldId]
+      }
+    })
+  }
+
+  return newState
 }

@@ -1,4 +1,6 @@
+import { Box, Cable, Database, Sparkles } from 'lucide-react'
 import {
+  cn,
   RadioGroupStacked,
   RadioGroupStackedItem,
   Select_Shadcn_,
@@ -17,8 +19,15 @@ import {
   MultiSelectorTrigger,
 } from 'ui-patterns/multi-select'
 
-import type { FieldOption, ResolvedField } from './Connect.types'
+import type { ConnectMode, FieldOption, ResolvedField } from './Connect.types'
 import { ConnectionIcon } from './ConnectionIcon'
+
+const MODE_ICONS: Record<string, React.ReactNode> = {
+  framework: <Box size={16} strokeWidth={1.5} />,
+  direct: <Database size={16} strokeWidth={1.5} />,
+  orm: <Cable size={16} strokeWidth={1.5} />,
+  mcp: <Sparkles size={16} strokeWidth={1.5} />,
+}
 
 interface ConnectConfigSectionProps {
   activeFields: ResolvedField[]
@@ -56,9 +65,8 @@ export function ConnectConfigSection({
               <FormItemLayout
                 key={field.id}
                 isReactForm={false}
-                layout="flex-row-reverse"
+                layout="horizontal"
                 label={field.label}
-                className={formLayoutClassName}
               >
                 <RadioGroupStacked
                   value={String(value ?? '')}
@@ -88,9 +96,8 @@ export function ConnectConfigSection({
               <FormItemLayout
                 key={field.id}
                 isReactForm={false}
-                layout="flex-row-reverse"
+                layout="horizontal"
                 label={field.label}
-                className={formLayoutClassName}
               >
                 <RadioGroupStacked
                   value={String(value ?? '')}
@@ -126,21 +133,34 @@ export function ConnectConfigSection({
               <FormItemLayout
                 key={field.id}
                 isReactForm={false}
-                layout="flex-row-reverse"
+                layout="horizontal"
                 label={field.label}
                 description={field.description}
-                className={formLayoutClassName}
               >
                 <Select_Shadcn_
                   value={String(value ?? '')}
                   onValueChange={(v) => onFieldChange(field.id, v)}
                 >
-                  <SelectTrigger_Shadcn_ size="small" className="w-full">
+                  <SelectTrigger_Shadcn_
+                    size="small"
+                    className="[&>span:first-child]:flex [&>span:first-child]:items-center [&>span:first-child]:gap-x-2"
+                  >
                     <SelectValue_Shadcn_ />
                   </SelectTrigger_Shadcn_>
                   <SelectContent_Shadcn_>
                     {options.map((option) => (
-                      <SelectItem_Shadcn_ key={option.value} value={option.value}>
+                      <SelectItem_Shadcn_
+                        key={option.value}
+                        value={option.value}
+                        className="[&>span:last-child]:flex [&>span:last-child]:items-center [&>span:last-child]:gap-x-2"
+                      >
+                        {/* 
+                          [Joshen] Omitting MCP icons for now as the images are not optimized (large)
+                          and is causing noticeably latency issues on the browser (even with the existing Connect UI)
+                         */}
+                        {field.id === 'framework' && option.icon && (
+                          <ConnectionIcon icon={option.icon} />
+                        )}
                         {option.label}
                       </SelectItem_Shadcn_>
                     ))}
@@ -154,10 +174,10 @@ export function ConnectConfigSection({
               <FormItemLayout
                 key={field.id}
                 isReactForm={false}
-                layout="flex-row-reverse"
+                layout="horizontal"
                 label={field.label}
                 description={field.description}
-                className={formLayoutClassName}
+                className="[&>div>label>span]:!break-keep [&>div>label>span]:text-balance"
               >
                 <Switch
                   id={field.id}
@@ -172,10 +192,9 @@ export function ConnectConfigSection({
               <FormItemLayout
                 key={field.id}
                 isReactForm={false}
-                layout="flex-row-reverse"
+                layout="horizontal"
                 label={field.label}
                 description={field.description}
-                className={formLayoutClassName}
               >
                 <MultiSelector
                   values={Array.isArray(value) ? value : []}
@@ -190,8 +209,12 @@ export function ConnectConfigSection({
                   <MultiSelectorContent>
                     <MultiSelectorList>
                       {options.map((option) => (
-                        <MultiSelectorItem key={option.value} value={option.value}>
-                          <div className="flex flex-col">
+                        <MultiSelectorItem
+                          key={option.value}
+                          value={option.value}
+                          className="items-start"
+                        >
+                          <div className="flex flex-col ml-2 gap-y-0.5">
                             <span className="font-medium">{option.label}</span>
                             {option.description && (
                               <span className="text-xs text-foreground-light">
@@ -211,6 +234,38 @@ export function ConnectConfigSection({
             return null
         }
       })}
+    </div>
+  )
+}
+
+interface ModeSelectorProps {
+  modes: Array<{ id: ConnectMode; label: string; description: string }>
+  selected: ConnectMode
+  onChange: (mode: ConnectMode) => void
+}
+
+export function ModeSelector({ modes, selected, onChange }: ModeSelectorProps) {
+  return (
+    <div className="grid grid-cols-4 rounded-lg border">
+      {modes.map((mode) => (
+        <button
+          key={mode.id}
+          type="button"
+          onClick={() => onChange(mode.id)}
+          className={cn(
+            'flex flex-col items-center gap-2 p-4 transition-colors border-r last:border-r-0',
+            selected === mode.id
+              ? 'bg-surface-200'
+              : 'border-default hover:border-strong hover:bg-surface-100 '
+          )}
+        >
+          <span className="text-foreground-light">{MODE_ICONS[mode.id]}</span>
+          <div>
+            <p className="heading-default text-center">{mode.label}</p>
+            <p className="text-sm text-foreground-lighter text-center">{mode.description}</p>
+          </div>
+        </button>
+      ))}
     </div>
   )
 }

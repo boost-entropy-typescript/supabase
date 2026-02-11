@@ -2,14 +2,15 @@ import { Copy } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Button, copyToClipboard } from 'ui'
 
-import { INSTALL_COMMANDS } from '../../../Connect.constants'
-import type { StepContentProps } from '../../../Connect.types'
+import { INSTALL_COMMANDS } from '@/components/interfaces/ConnectSheet/connect.schema'
+import type { StepContentProps } from '@/components/interfaces/ConnectSheet/Connect.types'
+import { resolveFrameworkLibraryKey } from '@/components/interfaces/ConnectSheet/Connect.utils'
 
 /**
  * Gets the install command for the current framework selection.
  */
 function getInstallCommand(state: StepContentProps['state']): string | null {
-  const libraryKey = typeof state.library === 'string' ? state.library : null
+  const libraryKey = resolveFrameworkLibraryKey(state)
 
   if (libraryKey && INSTALL_COMMANDS[libraryKey]) return INSTALL_COMMANDS[libraryKey]
 
