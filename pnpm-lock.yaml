@@ -1660,6 +1660,9 @@ importers:
       markdown-toc:
         specifier: ^1.2.0
         version: 1.2.0
+      marketing:
+        specifier: workspace:*
+        version: link:../../packages/marketing
       mdast-util-from-markdown:
         specifier: ^2.0.2
         version: 2.0.2(supports-color@8.1.1)
@@ -2242,6 +2245,34 @@ importers:
         specifier: 'catalog:'
         version: 18.3.3
 
+  packages/marketing:
+    dependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 18.3.3
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+      react-markdown:
+        specifier: ^8.0.3
+        version: 8.0.7(@types/react@18.3.3)(react@18.3.1)(supports-color@8.1.1)
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
+      ui:
+        specifier: workspace:*
+        version: link:../ui
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      tsconfig:
+        specifier: 'workspace:'
+        version: link:../tsconfig
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+
   packages/pg-meta:
     dependencies:
       zod:
@@ -2450,8 +2481,8 @@ importers:
         specifier: ^5.2.4
         version: 5.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-resizable-panels:
-        specifier: ^3.0.0
-        version: 3.0.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^4.6.5
+        version: 4.6.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-syntax-highlighter:
         specifier: ^15.6.6
         version: 15.6.6(react@18.3.1)
@@ -15988,11 +16019,11 @@ packages:
       '@types/react':
         optional: true
 
-  react-resizable-panels@3.0.6:
-    resolution: {integrity: sha512-b3qKHQ3MLqOgSS+FRYKapNkJZf5EQzuf6+RLiq1/IlTHw99YrZ2NJZLk4hQIzTnnIkRg2LUqyVinu6YWWpUYew==}
+  react-resizable-panels@4.6.5:
+    resolution: {integrity: sha512-pmQP6qv9KmsesNMvWVNvVfVJAwYSOWWbAOAtrPR8Cre20+j1NWIlyft0btjtDQE+OepXmI6g3VPrCXQY0oD7+Q==}
     peerDependencies:
-      react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
-      react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
 
   react-resizable@3.0.5:
     resolution: {integrity: sha512-vKpeHhI5OZvYn82kXOs1bC8aOXktGU5AmKAgaZS4F5JPburCtbmDPqE7Pzp+1kN4+Wb81LlF33VpGwWwtXem+w==}
@@ -35040,7 +35071,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.3
 
-  react-resizable-panels@3.0.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-resizable-panels@4.6.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
