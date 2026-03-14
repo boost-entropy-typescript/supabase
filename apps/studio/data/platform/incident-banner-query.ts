@@ -31,6 +31,10 @@ export const incidentBannerQueryOptions = () =>
   queryOptions({
     queryKey: platformKeys.incidentBanner(),
     queryFn: ({ signal }) => getIncidentBanner(signal),
+    refetchOnWindowFocus: false,
+    // exponential backoff retry starting at 4s, 16s, 64s, 256s etc. Hard capped at 5 minutes to prevent excessively
+    // long retry delays.
+    retryDelay: (attemptIndex) => Math.min(1000 * 4 ** attemptIndex, 1000 * 60 * 5),
     staleTime: 1000 * 60 * 5,
     enabled: IS_PLATFORM,
   })
