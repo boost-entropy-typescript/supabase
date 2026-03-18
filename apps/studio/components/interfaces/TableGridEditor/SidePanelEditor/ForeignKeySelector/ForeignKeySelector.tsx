@@ -1,19 +1,7 @@
+import { FOREIGN_KEY_CASCADE_ACTION } from '@supabase/pg-meta'
 import type { PostgresTable } from '@supabase/postgres-meta'
-import { sortBy } from 'lodash'
-import { ArrowRight, Database, HelpCircle, Loader2, Table, X } from 'lucide-react'
-import { Fragment, useEffect, useState } from 'react'
-import {
-  AlertDescription_Shadcn_,
-  AlertTitle_Shadcn_,
-  Alert_Shadcn_,
-  Button,
-  Listbox,
-  SidePanel,
-} from 'ui'
-
 import { DocsButton } from 'components/ui/DocsButton'
 import InformationBox from 'components/ui/InformationBox'
-import { FOREIGN_KEY_CASCADE_ACTION } from 'data/database/database-query-constants'
 import { useSchemasQuery } from 'data/database/schemas-query'
 import { useTableQuery } from 'data/tables/table-retrieve-query'
 import { useTablesQuery } from 'data/tables/tables-query'
@@ -21,6 +9,18 @@ import { useQuerySchemaState } from 'hooks/misc/useSchemaQueryState'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { DOCS_URL } from 'lib/constants'
 import { uuidv4 } from 'lib/helpers'
+import { sortBy } from 'lodash'
+import { ArrowRight, Database, HelpCircle, Loader2, Table, X } from 'lucide-react'
+import { Fragment, useEffect, useState } from 'react'
+import {
+  Alert_Shadcn_,
+  AlertDescription_Shadcn_,
+  AlertTitle_Shadcn_,
+  Button,
+  Listbox,
+  SidePanel,
+} from 'ui'
+
 import { ActionBar } from '../ActionBar'
 import { NUMERICAL_TYPES, TEXT_TYPES } from '../SidePanelEditor.constants'
 import type { ColumnField } from '../SidePanelEditor.types'
