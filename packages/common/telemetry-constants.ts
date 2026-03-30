@@ -3037,6 +3037,30 @@ export interface LogExplorerQueryRunButtonClickedEvent {
 }
 
 /**
+ * User clicked the Navigate action in the storage explorer header.
+ *
+ * @group Events
+ * @source studio
+ * @page /project/{ref}/storage/files/buckets/{bucketId}
+ */
+export interface StorageExplorerNavigateClickedEvent {
+  action: 'storage_explorer_navigate_clicked'
+  groups: TelemetryGroups
+}
+
+/**
+ * User submitted a folder path from the storage explorer Navigate action.
+ *
+ * @group Events
+ * @source studio
+ * @page /project/{ref}/storage/files/buckets/{bucketId}
+ */
+export interface StorageExplorerNavigateSubmittedEvent {
+  action: 'storage_explorer_navigate_submitted'
+  groups: TelemetryGroups
+}
+
+/**
  * @hidden
  */
 export type TelemetryEvent =
@@ -3110,6 +3134,8 @@ export type TelemetryEvent =
   | SendFeedbackButtonClickedEvent
   | SqlEditorQueryRunButtonClickedEvent
   | LogExplorerQueryRunButtonClickedEvent
+  | StorageExplorerNavigateClickedEvent
+  | StorageExplorerNavigateSubmittedEvent
   | StudioPricingPlanCtaClickedEvent
   | StudioPricingSidePanelOpenedEvent
   | ReportsDatabaseGrafanaBannerClickedEvent
