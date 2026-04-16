@@ -243,7 +243,9 @@ const FormField = ({
                           {...field}
                           id={name}
                           type="number"
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                          }
                           readOnly={readOnly}
                         />
                         <InputGroupAddon align="inline-end">
@@ -257,8 +259,10 @@ const FormField = ({
                         {...field}
                         id={name}
                         type="number"
+                        onChange={(e) =>
+                          field.onChange(e.target.value === '' ? '' : Number(e.target.value))
+                        }
                         readOnly={readOnly}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
                       />
                     )}
                   </FormControl_Shadcn_>
