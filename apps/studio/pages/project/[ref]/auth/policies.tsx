@@ -1,6 +1,6 @@
 import type { PostgresPolicy, PostgresTable } from '@supabase/postgres-meta'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { LOCAL_STORAGE_KEYS, useFlag, useParams } from 'common'
+import { LOCAL_STORAGE_KEYS, useParams } from 'common'
 import { Search, X } from 'lucide-react'
 import { parseAsBoolean, parseAsString, useQueryState } from 'nuqs'
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
@@ -115,7 +115,6 @@ const AuthPoliciesPage: NextPageWithLayout = () => {
 
   const isInlineEditorEnabled = useIsInlineEditorEnabled()
   const rlsTesterEnabled = useIsRLSTesterEnabled()
-  const rlsTesterVisible = useFlag('rlsTester')
 
   const { openSidebar } = useSidebarManagerSnapshot()
   const {
@@ -237,7 +236,7 @@ const AuthPoliciesPage: NextPageWithLayout = () => {
   const handleResetSearch = useCallback(() => setSearchString(''), [setSearchString])
 
   useEffect(() => {
-    if (!rlsTesterVisible || rlsTesterEnabled) return
+    if (rlsTesterEnabled) return
 
     if (!isRlsTesterBannerDismissed) {
       addBanner({
@@ -253,7 +252,7 @@ const AuthPoliciesPage: NextPageWithLayout = () => {
     return () => {
       dismissBanner('rls-tester-banner')
     }
-  }, [addBanner, dismissBanner, isRlsTesterBannerDismissed, rlsTesterEnabled, rlsTesterVisible])
+  }, [addBanner, dismissBanner, isRlsTesterBannerDismissed, rlsTesterEnabled])
 
   useEffect(() => {
     if (!isTriggerPermissionsLoaded) return
