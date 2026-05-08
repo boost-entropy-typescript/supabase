@@ -401,6 +401,18 @@ export interface ProjectCreationSimpleVersionSubmittedEvent {
 }
 
 /**
+ * User clicked to connect GitHub during project creation.
+ *
+ * @group Events
+ * @source studio
+ * @page new/{slug}
+ */
+export interface ProjectCreationGithubConnectClickedEvent {
+  action: 'project_creation_github_connect_clicked'
+  groups: Omit<TelemetryGroups, 'project'>
+}
+
+/**
  * Existing project creation form confirm modal was triggered and opened.
  *
  * @group Events
@@ -3418,6 +3430,7 @@ export type TelemetryEvent =
   | TimezonePickerClickedEvent
   | ProjectCreationRlsOptionExperimentExposedEvent
   | ProjectCreationDefaultPrivilegesExposedEvent
+  | ProjectCreationGithubConnectClickedEvent
   | ProjectCreationSimpleVersionSubmittedEvent
   | ProjectCreationSimpleVersionConfirmModalOpenedEvent
   | TableApiAccessToggleClickedEvent
