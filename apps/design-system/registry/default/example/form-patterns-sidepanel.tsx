@@ -16,16 +16,16 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
-  Popover_Shadcn_,
-  PopoverContent_Shadcn_,
-  PopoverTrigger_Shadcn_,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   RadioGroupStacked,
   RadioGroupStackedItem,
-  Select_Shadcn_,
-  SelectContent_Shadcn_,
-  SelectItem_Shadcn_,
-  SelectTrigger_Shadcn_,
-  SelectValue_Shadcn_,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
   Sheet,
   SheetContent,
@@ -559,22 +559,16 @@ export default function FormPatternsSidePanel() {
                       description="Single selection from a list of options"
                     >
                       <FormControl className="col-span-6">
-                        <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger_Shadcn_>
-                            <SelectValue_Shadcn_ placeholder="Select an option" />
-                          </SelectTrigger_Shadcn_>
-                          <SelectContent_Shadcn_>
-                            <SelectItem_Shadcn_ value="us-east-1">
-                              US East (N. Virginia)
-                            </SelectItem_Shadcn_>
-                            <SelectItem_Shadcn_ value="us-west-2">
-                              US West (Oregon)
-                            </SelectItem_Shadcn_>
-                            <SelectItem_Shadcn_ value="eu-west-1">
-                              EU West (Ireland)
-                            </SelectItem_Shadcn_>
-                          </SelectContent_Shadcn_>
-                        </Select_Shadcn_>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an option" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="us-east-1">US East (N. Virginia)</SelectItem>
+                            <SelectItem value="us-west-2">US West (Oregon)</SelectItem>
+                            <SelectItem value="eu-west-1">EU West (Ireland)</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                     </FormItemLayout>
                   )}
@@ -669,8 +663,8 @@ export default function FormPatternsSidePanel() {
                       description="Date selection with calendar popover"
                     >
                       <FormControl className="col-span-6">
-                        <Popover_Shadcn_>
-                          <PopoverTrigger_Shadcn_ asChild>
+                        <Popover>
+                          <PopoverTrigger asChild>
                             <Button
                               type="outline"
                               className="bg-control w-full justify-start text-left font-normal px-3 py-4"
@@ -678,16 +672,16 @@ export default function FormPatternsSidePanel() {
                             >
                               {field.value ? format(field.value, 'PPP') : 'Pick a date'}
                             </Button>
-                          </PopoverTrigger_Shadcn_>
-                          <PopoverContent_Shadcn_ className="w-auto p-0" align="start">
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
                               selected={field.value}
                               onSelect={field.onChange}
                               initialFocus
                             />
-                          </PopoverContent_Shadcn_>
-                        </Popover_Shadcn_>
+                          </PopoverContent>
+                        </Popover>
                       </FormControl>
                     </FormItemLayout>
                   )}

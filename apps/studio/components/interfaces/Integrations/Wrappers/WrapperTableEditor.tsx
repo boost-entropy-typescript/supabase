@@ -22,17 +22,17 @@ import {
   FormControl,
   FormField,
   Input,
-  Label_Shadcn_,
-  Popover_Shadcn_,
-  PopoverContent_Shadcn_,
-  PopoverTrigger_Shadcn_,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   ScrollArea,
-  Select_Shadcn_,
-  SelectContent_Shadcn_,
-  SelectItem_Shadcn_,
-  SelectSeparator_Shadcn_,
-  SelectTrigger_Shadcn_,
-  SelectValue_Shadcn_,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
   SidePanel,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
@@ -115,11 +115,9 @@ const WrapperTableEditor = ({
       <SidePanel.Content>
         <div className="my-4 flex flex-col gap-y-6">
           <div className="flex flex-col gap-y-2">
-            <Label_Shadcn_ className="text-foreground-light">
-              Select a target the table will point to
-            </Label_Shadcn_>
-            <Popover_Shadcn_ open={open} onOpenChange={setOpen}>
-              <PopoverTrigger_Shadcn_ asChild>
+            <Label className="text-foreground-light">Select a target the table will point to</Label>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
                 <Button
                   type="default"
                   role="combobox"
@@ -136,8 +134,8 @@ const WrapperTableEditor = ({
                 >
                   {!!selectedTableIndex ? tables[Number(selectedTableIndex)].label : '---'}
                 </Button>
-              </PopoverTrigger_Shadcn_>
-              <PopoverContent_Shadcn_ id={listboxId} className="p-0" sameWidthAsTrigger>
+              </PopoverTrigger>
+              <PopoverContent id={listboxId} className="p-0" sameWidthAsTrigger>
                 <Command_Shadcn_>
                   <CommandInput_Shadcn_ placeholder="Find a table..." />
                   <CommandList_Shadcn_>
@@ -170,8 +168,8 @@ const WrapperTableEditor = ({
                     </CommandGroup_Shadcn_>
                   </CommandList_Shadcn_>
                 </Command_Shadcn_>
-              </PopoverContent_Shadcn_>
-            </Popover_Shadcn_>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {selectedTable && (
@@ -195,19 +193,19 @@ const Option = ({ option, control }: { option: TableOption; control: Control<Fie
         render={({ field }) => (
           <FormItemLayout layout="vertical" label={option.label} name={option.name}>
             <FormControl>
-              <Select_Shadcn_ value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger_Shadcn_>
-                  <SelectValue_Shadcn_ placeholder="Select an option" />
-                </SelectTrigger_Shadcn_>
-                <SelectContent_Shadcn_>
-                  <SelectSeparator_Shadcn_ />
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an option" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectSeparator />
                   {option.options.map((subOption) => (
-                    <SelectItem_Shadcn_ key={subOption.value} value={subOption.value}>
+                    <SelectItem key={subOption.value} value={subOption.value}>
                       {subOption.label}
-                    </SelectItem_Shadcn_>
+                    </SelectItem>
                   ))}
-                </SelectContent_Shadcn_>
-              </Select_Shadcn_>
+                </SelectContent>
+              </Select>
             </FormControl>
           </FormItemLayout>
         )}
@@ -348,7 +346,7 @@ const TableForm = ({
           render={({ field }) => (
             <FormItemLayout layout="vertical" label="Select a schema for the foreign table">
               <FormControl>
-                <Select_Shadcn_
+                <Select
                   name="schema"
                   value={field.value}
                   onValueChange={(schema) => {
@@ -356,21 +354,21 @@ const TableForm = ({
                     form.resetField('schema_name')
                   }}
                 >
-                  <SelectTrigger_Shadcn_>
-                    <SelectValue_Shadcn_ placeholder="Select an option" />
-                  </SelectTrigger_Shadcn_>
-                  <SelectContent_Shadcn_>
-                    <SelectItem_Shadcn_ value="custom">Create a new schema</SelectItem_Shadcn_>
-                    <SelectSeparator_Shadcn_ />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="custom">Create a new schema</SelectItem>
+                    <SelectSeparator />
                     {(schemas ?? [])?.map((schema) => {
                       return (
-                        <SelectItem_Shadcn_ key={schema.name} value={schema.name}>
+                        <SelectItem key={schema.name} value={schema.name}>
                           {schema.name}
-                        </SelectItem_Shadcn_>
+                        </SelectItem>
                       )
                     })}
-                  </SelectContent_Shadcn_>
-                </Select_Shadcn_>
+                  </SelectContent>
+                </Select>
               </FormControl>
             </FormItemLayout>
           )}

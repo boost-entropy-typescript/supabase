@@ -6,12 +6,12 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-  Label_Shadcn_,
-  Select_Shadcn_,
-  SelectContent_Shadcn_,
-  SelectItem_Shadcn_,
-  SelectTrigger_Shadcn_,
-  SelectValue_Shadcn_,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from 'ui'
 
 export default function RealtimeLimitsEstimater({}) {
@@ -65,64 +65,60 @@ export default function RealtimeLimitsEstimater({}) {
       <h4>Set your expected parameters</h4>
       <div className="grid mb-8 gap-y-8 gap-x-8 grid-cols-2 xl:grid-cols-4">
         <div>
-          <Label_Shadcn_ htmlFor="computeAddOn">Compute:</Label_Shadcn_>
-          <Select_Shadcn_ onValueChange={handleComputeAddOnSelection} value={computeAddOn}>
-            <SelectTrigger_Shadcn_ id="computeAddOn">
-              <SelectValue_Shadcn_ className="font-mono" />
-            </SelectTrigger_Shadcn_>
-            <SelectContent_Shadcn_>
-              <SelectItem_Shadcn_ value="micro">Micro</SelectItem_Shadcn_>
-              <SelectItem_Shadcn_ value="small">Small to medium</SelectItem_Shadcn_>
-              <SelectItem_Shadcn_ value="large">Large to 16XL</SelectItem_Shadcn_>
-            </SelectContent_Shadcn_>
-          </Select_Shadcn_>
+          <Label htmlFor="computeAddOn">Compute:</Label>
+          <Select onValueChange={handleComputeAddOnSelection} value={computeAddOn}>
+            <SelectTrigger id="computeAddOn">
+              <SelectValue className="font-mono" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="micro">Micro</SelectItem>
+              <SelectItem value="small">Small to medium</SelectItem>
+              <SelectItem value="large">Large to 16XL</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div>
-          <Label_Shadcn_ htmlFor="filters">Filters:</Label_Shadcn_>
-          <Select_Shadcn_
-            onValueChange={handleFiltersSelection}
-            value={filters.toString()}
-            disabled
-          >
-            <SelectTrigger_Shadcn_ id="filters">
-              <SelectValue_Shadcn_ className="font-mono" />
-            </SelectTrigger_Shadcn_>
-            <SelectContent_Shadcn_>
-              <SelectItem_Shadcn_ value="false">No</SelectItem_Shadcn_>
-              <SelectItem_Shadcn_ value="true">Yes</SelectItem_Shadcn_>
-            </SelectContent_Shadcn_>
-          </Select_Shadcn_>
+          <Label htmlFor="filters">Filters:</Label>
+          <Select onValueChange={handleFiltersSelection} value={filters.toString()} disabled>
+            <SelectTrigger id="filters">
+              <SelectValue className="font-mono" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="false">No</SelectItem>
+              <SelectItem value="true">Yes</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div>
-          <Label_Shadcn_ htmlFor="rls">RLS:</Label_Shadcn_>
-          <Select_Shadcn_ onValueChange={handleRLSSelection} value={rls.toString()}>
-            <SelectTrigger_Shadcn_ id="rls">
-              <SelectValue_Shadcn_ className="font-mono" />
-            </SelectTrigger_Shadcn_>
-            <SelectContent_Shadcn_>
-              <SelectItem_Shadcn_ value="false">No</SelectItem_Shadcn_>
-              <SelectItem_Shadcn_ value="true">Yes</SelectItem_Shadcn_>
-            </SelectContent_Shadcn_>
-          </Select_Shadcn_>
+          <Label htmlFor="rls">RLS:</Label>
+          <Select onValueChange={handleRLSSelection} value={rls.toString()}>
+            <SelectTrigger id="rls">
+              <SelectValue className="font-mono" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="false">No</SelectItem>
+              <SelectItem value="true">Yes</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div>
-          <Label_Shadcn_ htmlFor="concurrency">Connected clients:</Label_Shadcn_>
-          <Select_Shadcn_ onValueChange={handleConcurrencySelection} value={concurrency.toString()}>
-            <SelectTrigger_Shadcn_ id="concurrency">
-              <SelectValue_Shadcn_ className="font-mono" />
-            </SelectTrigger_Shadcn_>
-            <SelectContent_Shadcn_>
+          <Label htmlFor="concurrency">Connected clients:</Label>
+          <Select onValueChange={handleConcurrencySelection} value={concurrency.toString()}>
+            <SelectTrigger id="concurrency">
+              <SelectValue className="font-mono" />
+            </SelectTrigger>
+            <SelectContent>
               {throughputTable
                 .filter(
                   (l) => l.computeAddOn === computeAddOn && l.filters === filters && l.rls === rls
                 )
                 .map((l) => (
-                  <SelectItem_Shadcn_ key={l.concurrency} value={l.concurrency.toString()}>
+                  <SelectItem key={l.concurrency} value={l.concurrency.toString()}>
                     {Intl.NumberFormat().format(l.concurrency)}
-                  </SelectItem_Shadcn_>
+                  </SelectItem>
                 ))}
-            </SelectContent_Shadcn_>
-          </Select_Shadcn_>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
