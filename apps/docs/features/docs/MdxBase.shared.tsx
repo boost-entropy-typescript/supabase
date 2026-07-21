@@ -19,6 +19,7 @@ import { RealtimeLimitsEstimator } from '~/components/RealtimeLimitsEstimator'
 import { RegionsList, SmartRegionsList } from '~/components/RegionsList'
 import { SharedData } from '~/components/SharedData'
 import StepHikeCompact from '~/components/StepHikeCompact'
+import { TerraformProviderSchema } from '~/components/TerraformProviderSchema'
 import { CodeSampleDummy, CodeSampleWrapper } from '~/features/directives/CodeSample.client'
 import { NamedCodeBlock } from '~/features/directives/CodeTabs.components'
 import { MdxAnchor } from '~/features/docs/MdxAnchor'
@@ -111,6 +112,7 @@ const components = {
   StepHikeCompact,
   Tabs,
   TabPanel,
+  TerraformProviderSchema,
   InfoTooltip,
   a: MdxAnchor,
   h2: (props: ComponentPropsWithoutRef<'h2'>) => (

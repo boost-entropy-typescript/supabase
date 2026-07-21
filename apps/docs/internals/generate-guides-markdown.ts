@@ -15,6 +15,7 @@ import { mcpConfigPanelMarkdown as McpConfigPanel } from 'ui-patterns/McpUrlBuil
 import { addBaseUrlPrefix, getInternalLinkBaseUrl, withDocsBasePath } from './internal-links'
 import { AccordionItem } from './markdown-schema/Accordion'
 import { Admonition } from './markdown-schema/Admonition'
+import { AiSkillsIndex } from './markdown-schema/AiSkillsIndex'
 import { AuthProviders } from './markdown-schema/AuthProviders'
 import { ComputeDiskLimitsTable } from './markdown-schema/ComputeDiskLimitsTable'
 import { ContentListings } from './markdown-schema/ContentListings'
@@ -34,6 +35,7 @@ import { RegionsList, SmartRegionsList } from './markdown-schema/RegionsList'
 import { SharedData } from './markdown-schema/SharedData'
 import { StepHike } from './markdown-schema/StepHike'
 import { TabPanel } from './markdown-schema/TabPanel'
+import { TerraformProviderSchema } from './markdown-schema/TerraformProviderSchema'
 import {
   collectMarkdownSources,
   type FrontmatterFormat,
@@ -164,6 +166,7 @@ function applySchema(parent: Parent, schema: ComponentSchema): void {
 const SCHEMA: ComponentSchema = {
   AccordionItem,
   Admonition,
+  AiSkillsIndex,
   IconCheck,
   IconX,
   Image,
@@ -187,6 +190,7 @@ const SCHEMA: ComponentSchema = {
   ContentListings,
   NavData,
   SharedData,
+  TerraformProviderSchema,
 }
 
 function parseFrontmatter(raw: string, frontmatter: FrontmatterFormat) {
