@@ -4,12 +4,15 @@ import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react
 import { toast } from 'sonner'
 
 import type { useSqlEditorDiff, useSqlEditorPrompt } from './hooks'
-import { sqlAiDisclaimerComment } from './SQLEditor.constants'
 import { DiffType, type IStandaloneDiffEditor } from './SQLEditor.types'
 import {
   assembleCompletionDiff,
+  buildCompletionRequestBody,
+  buildDebugChatArgs,
   buildDebugPromptText,
   createSqlSnippetSkeletonV2,
+  extractDebugContext,
+  planDiffRequestApplication,
 } from './SQLEditor.utils'
 import { useSQLEditorContext } from './SQLEditorContext'
 import { useSnippetTitleGenerator } from './useSnippetTitleGenerator'
@@ -100,10 +103,7 @@ export function useSqlEditorAi({ id, editorMountCount, diff, prompt }: UseSqlEdi
   const buildDebugPrompt = useCallback(() => {
     const snippet = snapV2.snippets[id]
     const result = sessionSnap.results[id]?.[0]
-    const sql = (snippet?.snippet.content?.unchecked_sql ?? '')
-      .replace(sqlAiDisclaimerComment, '')
-      .trim()
-    const errorMessage = result?.error?.message ?? 'Unknown error'
+    const { sql, errorMessage } = extractDebugContext(snippet, result)
 
     return buildDebugPromptText(sql, errorMessage)
   }, [id, sessionSnap.results, snapV2.snippets])
@@ -113,13 +113,7 @@ export function useSqlEditorAi({ id, editorMountCount, diff, prompt }: UseSqlEdi
       const snippet = snapV2.snippets[id]
       const result = sessionSnap.results[id]?.[0]
       openSidebar(SIDEBAR_KEYS.AI_ASSISTANT)
-      aiSnap.newChat({
-        name: 'Debug SQL snippet',
-        sqlSnippets: [
-          (snippet.snippet.content?.unchecked_sql ?? '').replace(sqlAiDisclaimerComment, '').trim(),
-        ],
-        initialInput: `Help me to debug the attached sql snippet which gives the following error: \n\n${result.error.message}`,
-      })
+      aiSnap.newChat(buildDebugChatArgs(snippet, result))
     } catch (error: unknown) {
       // [Joshen] There's a tendency for the SQL debug to chuck a lengthy error message
       // that's not relevant for the user - so we prettify it here by avoiding to return the
@@ -206,13 +200,14 @@ export function useSqlEditorAi({ id, editorMountCount, diff, prompt }: UseSqlEdi
             'Content-Type': 'application/json',
             ...(options?.headers ?? {}),
           },
-          body: JSON.stringify({
-            projectRef: project?.ref,
-            connectionString: project?.connectionString,
-            language: 'sql',
-            orgSlug: org?.slug,
-            ...(options?.body ?? {}),
-          }),
+          body: JSON.stringify(
+            buildCompletionRequestBody({
+              projectRef: project?.ref,
+              connectionString: project?.connectionString,
+              orgSlug: org?.slug,
+              options: options?.body,
+            })
+          ),
         })
 
         if (!response.ok) {
@@ -333,21 +328,19 @@ export function useSqlEditorAi({ id, editorMountCount, diff, prompt }: UseSqlEdi
     // on mount and re-runs this effect, so the request applies once mounted.
     if (!editorModel) return
 
-    const { diffType, sql } = request
     const existingValue = editorRef.current?.getValue() ?? ''
-    if (existingValue.length === 0) {
+    const plan = planDiffRequestApplication({ existingValue, request })
+    if (plan.kind === 'replace') {
       // if the editor is empty, just copy over the code
       editorRef.current?.executeEdits('apply-ai-message', [
         {
-          text: `${sql}`,
+          text: plan.text,
           range: editorModel.getFullModelRange(),
         },
       ])
     } else {
-      const currentSql = editorRef.current?.getValue()
-      const diff = { original: currentSql || '', modified: sql }
-      setSourceSqlDiff(diff)
-      setSelectedDiffType(diffType)
+      setSourceSqlDiff(plan.diff)
+      setSelectedDiffType(plan.diffType)
     }
 
     // One-shot: drain the request so it can't re-apply to a later editor or session.
