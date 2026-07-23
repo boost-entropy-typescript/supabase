@@ -43,7 +43,7 @@ const typescriptConfig = {
   rules: {
     '@typescript-eslint/no-explicit-any': 'warn',
     'supabase/no-await-before-copy-to-clipboard': 'error',
-    'supabase/require-explicit-tabindex': 'warn',
+    'supabase/require-explicit-tabindex': 'error',
   },
 }
 

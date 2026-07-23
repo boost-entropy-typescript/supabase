@@ -28,6 +28,7 @@ const FeedbackButton = forwardRef<
 
   return (
     <button
+      tabIndex={0}
       ref={ref}
       className={cn(
         'mt-0',
