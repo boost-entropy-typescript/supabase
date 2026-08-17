@@ -45,6 +45,11 @@ import { useExecuteSqlMutation } from '@/data/sql/execute-sql-mutation'
 import { applyAutoLimit } from '@/data/sql/utils'
 import { useLatest } from '@/hooks/misc/useLatest'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
+import { wrapWithRoleImpersonation } from '@/lib/role-impersonation'
+import {
+  isRoleImpersonationEnabled,
+  type RoleImpersonationController,
+} from '@/state/role-impersonation-state'
 
 /**
  * The query this editor is showing, tagged by backend. The tag correlates the SQL's
@@ -69,6 +74,7 @@ export type QueryEditorProps = {
   title: string
   query: ExplorerQueryModel
   result?: QueryResult
+  roleImpersonationState?: RoleImpersonationController
   display?: QueryDisplay
   toolbarActions?: ReactNode
   onTitleChange: (title: string) => void
@@ -76,6 +82,7 @@ export type QueryEditorProps = {
   onSqlCommit?: (sql: string) => void
   onSourceChange?: (source: QuerySourceBinding) => void
   onResultChange: (result: QueryResult) => void
+  onRowLimitChange?: (val: number) => void
   onDisplayChange?: (display: QueryDisplay) => void
 }
 
@@ -90,6 +97,7 @@ export const QueryEditor = ({
   title,
   query,
   result,
+  roleImpersonationState,
   display,
   toolbarActions,
   onTitleChange,
@@ -97,6 +105,7 @@ export const QueryEditor = ({
   onSqlCommit,
   onSourceChange,
   onResultChange,
+  onRowLimitChange,
   onDisplayChange,
 }: QueryEditorProps) => {
   const sql = query.uncheckedSql
@@ -183,10 +192,11 @@ export const QueryEditor = ({
     executeSql({
       projectRef: project.ref,
       connectionString,
-      sql: limitedSql.sql,
+      sql: wrapWithRoleImpersonation(limitedSql.sql, roleImpersonationState),
       autoLimit: limitedSql.appendAutoLimit ? rowLimit : undefined,
       contextualInvalidation: true,
       isStatementTimeoutDisabled: true,
+      isRoleImpersonationEnabled: isRoleImpersonationEnabled(roleImpersonationState?.role),
     })
   }
 
@@ -205,6 +215,9 @@ export const QueryEditor = ({
             <ExplorerQuerySourceMenu
               source={toQuerySourceBinding(query)}
               onSourceChange={onSourceChange}
+              rowLimit={rowLimit}
+              onRowLimitChange={onRowLimitChange}
+              roleImpersonationState={roleImpersonationState}
             />
           )}
           {display && onDisplayChange && (
@@ -267,7 +280,7 @@ export const QueryEditor = ({
         {rowLimit && (
           <>
             <p>·</p>
-            <p>Limit {rowLimit} rows</p>
+            <p>{rowLimit < 0 ? 'No row limit' : `Limit ${rowLimit} rows`}</p>
           </>
         )}
       </ExplorerQueryFooter>

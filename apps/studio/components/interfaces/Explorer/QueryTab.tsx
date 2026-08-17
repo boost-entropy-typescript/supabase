@@ -8,9 +8,8 @@ import { QueryEditor, type ExplorerQueryModel } from './QueryEditor'
 import { type QueryResult } from './types'
 import { toQuerySourceBinding } from '@/data/query-sources/query-source-registry'
 import { explorerQueryState, useExplorerQueryStateSnapshot } from '@/state/explorer-query'
+import { useLocalRoleImpersonationState } from '@/state/role-impersonation-state'
 import { createTabId, TabsStateContext } from '@/state/tabs'
-
-const QUERY_ROW_LIMIT = 100
 
 /** Query-tab lifecycle adapter around the shared QueryEditor. */
 export const QueryTab = () => {
@@ -18,7 +17,11 @@ export const QueryTab = () => {
   const router = useRouter()
   const tabs = useContext(TabsStateContext)
   const querySnap = useExplorerQueryStateSnapshot()
+  const roleImpersonationState = useLocalRoleImpersonationState()
+
+  const [rowLimit, setRowLimit] = useState<number>(100)
   const [restoredQueryKey, setRestoredQueryKey] = useState<string>()
+
   const stateDraft = id ? querySnap.drafts[id] : undefined
   const draft = stateDraft?.projectRef === ref ? stateDraft : undefined
   const result = draft && id ? querySnap.results[id] : undefined
@@ -81,7 +84,7 @@ export const QueryTab = () => {
       : {
           ...toQuerySourceBinding(draft),
           uncheckedSql: draft.uncheckedSql,
-          rowLimit: QUERY_ROW_LIMIT,
+          rowLimit,
         }
 
   return (
@@ -91,6 +94,7 @@ export const QueryTab = () => {
       title={draft.name}
       query={query}
       result={result}
+      roleImpersonationState={roleImpersonationState}
       onTitleChange={(value) => {
         const name = value.trim() || 'Untitled query'
         explorerQueryState.updateDraft({ id, name })
@@ -99,6 +103,7 @@ export const QueryTab = () => {
       onSqlChange={(sql) => explorerQueryState.updateDraft({ id, sql })}
       onSourceChange={(source) => explorerQueryState.updateDraft({ id, source })}
       onResultChange={handleResultChange}
+      onRowLimitChange={setRowLimit}
     />
   )
 }

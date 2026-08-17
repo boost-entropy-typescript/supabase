@@ -10,6 +10,7 @@ import {
   cloneChartConfig,
   cloneQueryCell,
   getCellDisplay,
+  setCellRowLimit,
   setCellSql,
   toQueryModel,
 } from './QueryCell.utils'
@@ -20,6 +21,7 @@ import {
 } from '@/data/content/notebooks/notebook-schema'
 import { type QuerySourceBinding } from '@/data/query-sources/query-source-registry'
 import { useCurrentNotebook, useNotebooksStateSnapshot } from '@/state/notebooks/notebooks-state'
+import { useLocalRoleImpersonationState } from '@/state/role-impersonation-state'
 
 interface QueryCellProps {
   cell: Snapshot<QueryCellSchema>
@@ -32,6 +34,7 @@ export const QueryCell = ({ cell }: QueryCellProps) => {
 
   const [sql, setSql] = useState<string>(cell.unchecked_sql)
   const [result, setResult] = useState<QueryResult>()
+  const roleImpersonationState = useLocalRoleImpersonationState()
 
   const title = cell.title ?? 'Untitled query'
 
@@ -78,6 +81,9 @@ export const QueryCell = ({ cell }: QueryCellProps) => {
       chart: cloneChartConfig(display.chart),
     }))
 
+  const handleRowLimitChange = (rowLimit: number) =>
+    updateQueryCell((candidate) => setCellRowLimit(candidate, rowLimit))
+
   return (
     <SortableSection
       id={cell.id}
@@ -91,12 +97,14 @@ export const QueryCell = ({ cell }: QueryCellProps) => {
         title={title}
         query={toQueryModel(cell, sql)}
         result={result}
+        roleImpersonationState={roleImpersonationState}
         display={getCellDisplay(cell)}
         onTitleChange={handleTitleChange}
         onSqlChange={setSql}
         onSqlCommit={handleSqlCommit}
         onSourceChange={handleSourceChange}
         onResultChange={setResult}
+        onRowLimitChange={handleRowLimitChange}
         onDisplayChange={handleDisplayChange}
       />
     </SortableSection>
