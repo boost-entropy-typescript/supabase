@@ -9,11 +9,11 @@ info:
 
   definition: spec/enrichments/tsdoc_v2/combined.json
   slugPrefix: '/'
-  specUrl: https://github.com/supabase/supabase/edit/master/apps/docs/spec/supabase_csharp_v1.yml
+  specUrl: https://github.com/supabase/supabase/edit/master/apps/docs/spec/supabase_csharp_v8.yml
   libraries:
     - name: 'C#'
       id: 'csharp'
-      version: '1.5.0'
+      version: '8.1.0'
 
 functions:
   - id: initializing
@@ -116,15 +116,14 @@ functions:
     description: |
       Creates a new user.
     notes: |
-      - `SignUp()` returns a `Session`. Inspect `Session.User` to determine the outcome; an empty `Session.User.Identities` list indicates the account already existed.
-      - By default, the user needs to verify their email address before logging in. To turn this off, disable **Confirm email** in [your project](https://supabase.com/dashboard/project/_/auth/providers).
+      - By default, the user needs to verify their email address before signing in. To turn this off, disable **Confirm email** in [your project](https://supabase.com/dashboard/project/_/auth/providers).
       - **Confirm email** determines if users need to confirm their email address after signing up.
-        - If **Confirm email** is enabled, the returned user is unconfirmed (`Session.User.ConfirmedAt` is null and `Session.User.ConfirmationSentAt` is set) and the client is not signed in.
-        - If **Confirm email** is disabled, the user is auto-confirmed, the returned `Session` is adopted as the current session, and a `SignedIn` state change fires.
+        - If **Confirm email** is enabled, a `user` is returned but `session` is null.
+        - If **Confirm email** is disabled, both a `user` and a `session` are returned.
       - When the user confirms their email address, they are redirected to the [`SITE_URL`](https://supabase.com/docs/guides/auth/concepts/redirect-urls) by default. You can modify your `SITE_URL` or add additional redirect URLs in [your project](https://supabase.com/dashboard/project/_/auth/url-configuration).
-      - If `SignUp()` is called for an existing confirmed user, GoTrue avoids revealing that the account exists, so the outcome depends on your project's settings:
-        - When both **Confirm email** and **Confirm phone** (even when phone provider is disabled) are enabled in [your project](/dashboard/project/_/auth/providers), a `Session` is returned whose `Session.User.Identities` list is empty (an obfuscated user; no new account was created).
-        - When either **Confirm email** or **Confirm phone** (even when phone provider is disabled) is disabled, a `GotrueException` with the message `User already registered` is thrown.
+      - If SignUp() is called for an existing confirmed user:
+        - When both **Confirm email** and **Confirm phone** (even when phone provider is disabled) are enabled in [your project](/dashboard/project/_/auth/providers), an obfuscated/fake user object is returned.
+        - When either **Confirm email** or **Confirm phone** (even when phone provider is disabled) is disabled, the error message, `User already registered` is returned.
     examples:
       - id: sign-up
         name: Sign up.
@@ -825,7 +824,7 @@ functions:
           ``` c#
           class HelloResponse
           {
-              [JsonProperty("name")]
+              [JsonPropertyName("name")]
               public string Name { get; set; }
           }
 
@@ -1109,6 +1108,7 @@ functions:
     title: 'Delete data: Delete()'
     notes: |
       - `Delete()` should always be combined with [Filters](/docs/reference/csharp/using-filters) to target the item(s) you wish to delete.
+      - The parameterless `Delete()` returns the deleted rows in `ModeledResponse<T>.Models`. A delete blocked by an RLS policy, or one that matches no rows, is not an error — it succeeds with an empty `Models` list.
     examples:
       - id: delete-records
         name: Delete records
@@ -1119,6 +1119,20 @@ functions:
             .From<City>()
             .Where(x => x.Id == 342)
             .Delete();
+          ```
+      - id: delete-records-with-response
+        name: Get the deleted rows
+        code: |
+          ```c#
+          var response = await supabase
+            .From<City>()
+            .Where(x => x.Id == 342)
+            .Delete();
+
+          if (response.Models.Count == 0)
+          {
+              // Nothing was deleted: the row did not exist, or an RLS policy hid it.
+          }
           ```
 
   - id: rpc
@@ -1151,6 +1165,7 @@ functions:
     notes: |
       - Realtime is disabled by default for new Projects for better database performance and security. You can turn it on by [managing replication](/docs/guides/api#managing-realtime).
       - If you want to receive the "previous" data for updates and deletes, you will need to set `REPLICA IDENTITY` to `FULL`, like this: `ALTER TABLE your_table REPLICA IDENTITY FULL;`
+      - Register every `postgres_changes` listener **before** calling `Subscribe()`. Adding one after the channel has joined throws a `RealtimeException`, because the set of changes to stream is sent to the server as part of the channel join. If you need a different set of changes later, create a new channel.
     examples:
       - id: listen-to-broadcast
         name: Listen to broadcast messages
@@ -1159,10 +1174,10 @@ functions:
           ```c#
           class CursorBroadcast : BaseBroadcast
           {
-              [JsonProperty("cursorX")]
+              [JsonPropertyName("cursorX")]
               public int CursorX {get; set;}
 
-              [JsonProperty("cursorY")]
+              [JsonPropertyName("cursorY")]
               public int CursorY {get; set;}
           }
 
@@ -1185,10 +1200,10 @@ functions:
           ```c#
             class UserPresence : BasePresence
             {
-                [JsonProperty("cursorX")]
+                [JsonPropertyName("cursorX")]
                 public bool IsTyping {get; set;}
 
-                [JsonProperty("onlineAt")]
+                [JsonPropertyName("onlineAt")]
                 public DateTime OnlineAt {get; set;}
             }
 
@@ -1775,7 +1790,7 @@ functions:
   - id: single
     title: Single()
     description: |
-      Retrieves only one row from the result. Result must be one row (e.g. using limit), otherwise this will result in an error.
+      Retrieves only one row from the result. Returns `null` when no row matches, the model when exactly one row matches, and throws a `PostgrestException` (status `406`) when more than one row matches. Constrain the query (for example, filter on a primary key or unique column) so it can only match a single row.
     examples:
       - id: with-select
         name: With `Select()`
