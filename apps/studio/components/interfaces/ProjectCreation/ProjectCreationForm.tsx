@@ -122,6 +122,7 @@ export const ProjectCreationForm = ({
   const surface = isVercelIntegrationFlow ? 'vercel' : 'main'
 
   const { data: currentOrg } = useSelectedOrganizationQuery()
+  const hasSelectedOrganization = currentOrg !== undefined
   const isFreePlan = currentOrg?.plan?.id === 'free'
   const canChooseInstanceSize = !isFreePlan
 
@@ -150,6 +151,9 @@ export const ProjectCreationForm = ({
   const showBestAvailableRegionOption =
     showBestAvailableRegionFeature && showBestAvailableRegionFlag && isFreePlan
   const [isBestAvailableSelected, setIsBestAvailableSelected] = useState(false)
+
+  const shouldTrackRegionRecommendation = isFreePlan && showBestAvailableRegionFeature
+  const initialRecommendedRegionRef = useRef<string | undefined>(undefined)
 
   // Read the raw flag for telemetry — coerce-undefined-to-false would record false for
   // users whose flags haven't loaded yet. The raw value preserves undefined (omitted from
@@ -283,7 +287,7 @@ export const ProjectCreationForm = ({
         desiredInstanceSize: instanceSize as DesiredInstanceSize,
       },
       {
-        enabled: flagsLoaded && smartRegionEnabled,
+        enabled: flagsLoaded && smartRegionEnabled && hasSelectedOrganization,
         refetchOnMount: false,
         refetchOnWindowFocus: false,
         refetchInterval: false,
@@ -300,6 +304,16 @@ export const ProjectCreationForm = ({
   const recommendedSmartRegion = smartRegionEnabled
     ? availableRegionsData?.recommendations.smartGroup.name
     : ''
+
+  if (
+    initialRecommendedRegionRef.current === undefined &&
+    flagsLoaded &&
+    shouldTrackRegionRecommendation
+  ) {
+    initialRecommendedRegionRef.current = showBestAvailableRegionOption
+      ? 'best_available'
+      : recommendedSmartRegion || undefined
+  }
 
   const fixedDefaultRegion = PROVIDERS[selectedCloudProvider].default_region.displayName
   const regionError = smartRegionEnabled ? availableRegionsError : defaultRegionError
@@ -373,7 +387,11 @@ export const ProjectCreationForm = ({
           ...(dataApiRevokeOnCreateDefaultFlag !== undefined && {
             dataApiRevokeOnCreateDefaultEnabled: dataApiRevokeOnCreateDefaultFlag,
           }),
-          ...(showBestAvailableRegionOption && { selectedRegionOption, selectedRegionOptionType }),
+          ...(shouldTrackRegionRecommendation && {
+            selectedRegionOption,
+            selectedRegionOptionType,
+            initialRecommendedRegion: initialRecommendedRegionRef.current,
+          }),
         },
         {
           project: res.ref,
@@ -792,6 +810,7 @@ export const ProjectCreationForm = ({
 
                     <RegionSelector
                       form={form}
+                      hasSelectedOrganization={hasSelectedOrganization}
                       instanceSize={instanceSize as DesiredInstanceSize}
                       showBestAvailableRegionOption={showBestAvailableRegionOption}
                       isBestAvailableSelected={isBestAvailableSelected}
